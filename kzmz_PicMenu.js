@@ -91,7 +91,7 @@
  * @type struct<MenuItemData>[]
  * @default []
  *
- * @help kz_PicMenuEx.js
+ * @help kzmz_PicMenuEx.js
  * 
  * 使用する画像は全て img/system　フォルダ内に入れてください。
  *
@@ -120,12 +120,11 @@
  * 別のプラグインで新しいコマンドを追加した場合
  * それらのsymbolを入力する事で同様に対応可能です。
  *
- * Special Thanks: サイリ(Twitter:sairi55)-アイデア発案、及びサンプル素材制作
+ * Special Thanks: サイリ(Twitter:@sairi55)-アイデア発案、要件定義
  * 
  * 
  * 更新履歴
- * v1.01 - 1.6.0以前のバージョンで動かない問題を修正
- * v1.02 - MenuIcon.pngを使用しないにも関わらずないとエラーが出る問題を修正
+ * v1.00 - MZ版を生成
  *
 */
 /*~struct~SymbolChart:

@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc メニューステータスの自由設置 - v1.01
+ * @plugindesc メニューステータスの自由設置 - v1.00
  * @author 剣崎宗二
  *
  * @param Status Rows
@@ -92,7 +92,7 @@
  * @type string[]
  * @default ["a.mp,a.mmp,10,40,70,20,21"]
  *
- * @help kz_MenuStatus.js
+ * @help kzmz_MenuStatus.js
  * ■使用する画像は全て任意の名前が使えます。
  *　 各パラメータにある配置箇所に注意して下さい。
  * ■表示テキスト、及びゲージの現在値/最大値には a.hp や a.atk などの他、
@@ -111,8 +111,10 @@
  *　 ○は値の名前なので分かりやすい名前にしてください。 　 
  *
  *
+ * Special Thanks: サイリ(Twitter:@sairi55)-アイデア発案、要件定義
+ * 
  * 更新履歴
- * v1.01 - 事前ロードを行うように改変
+ * v1.00 - MZ版を生成
  */
 
 (() => {
