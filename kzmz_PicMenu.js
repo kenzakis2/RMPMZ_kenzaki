@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc メニューコマンドの画像化（動き有） - v1.02
+ * @plugindesc メニューコマンドの画像化（動き有） - v1.00
  * @author 剣崎宗二
  *
  * @param icon width
