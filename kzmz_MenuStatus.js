@@ -207,6 +207,9 @@
         this.drawStatusText(index);
     };
 
+    Window_MenuStatus.prototype.drawBackgroundRect = function(rect) {   
+    };
+
     Window_MenuStatus.prototype.drawStatusText = function (index) {
         const a = $gameParty.members()[index];
         const rect = this.itemRect(index);
@@ -220,7 +223,6 @@
             const textColor = Number(dataArray[5]);
             const outlineColor = Number(dataArray[6]);
             const fontFace = dataArray[7];
-
 
             const currentOutlineColor = this.contents.outlineColor;
             if (fontFace) { this.contents.fontFace = fontFace; }
