@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc メニューステータスの自由設置 - v1.00
+ * @plugindesc メニューステータスの自由設置 - v1.01
  * @author 剣崎宗二
  *
  * @param Status Rows
@@ -115,6 +115,7 @@
  * 
  * 更新履歴
  * v1.00 - MZ版を生成
+ * v1.01 - ゲージ周りのバグを修正
  */
 
 (() => {
@@ -256,7 +257,6 @@
         const a = $gameParty.members()[index];
         const rect = this.itemRect(index);
         _dGaugeArray.forEach(function (line, index) {
-
             const dataArray = line.split(',');
             const minValue = Number(eval(dataArray[0]));
             const maxValue = Number(eval(dataArray[1]));
@@ -308,6 +308,16 @@
         this._maxValueEquation = maxValue;
         this._valueColor = color1;
         this._maxColor = color2;
+
+        const bw = this.bitmapWidth();
+        const bh = this.bitmapHeight();
+        this.bitmap = new Bitmap(bw, bh);
+        this.redraw();
+
+        this.updateBitmap();
+    };
+
+    Sprite_ExGauge.prototype.createBitmap = function() {
     };
 
     Sprite_ExGauge.prototype.bitmapWidth = function() {
