@@ -1,6 +1,8 @@
 /*:ja
  * @plugindesc メニューコマンドの画像化（動き有） - v1.01
  * @author 剣崎宗二
+ * 
+ * @target MZ
  *
  * @param icon width
  * @desc 画像アイコンの横幅
@@ -106,6 +108,9 @@
  *
  * □本体ver1.5.2以上の環境を想定しております、それ以下の環境下で
  *　 ご使用の場合何らかの不具合が出る可能性があります。　
+ *
+ * □フォントについて、デフォルトの数字フォントはrmmz-numberfont、通常フォントはrmmz-mainfontを指定してください。
+ * 　他のフォントを使用する場合はkzmz_FontRegistrationを導入する必要があります。
  *
  * ■デフォルトsymbol名一覧
  * 　アイテム　…　item

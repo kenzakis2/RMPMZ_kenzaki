@@ -2,6 +2,8 @@
  * @plugindesc メニューステータスの自由設置 - v1.01
  * @author 剣崎宗二
  *
+ * @target MZ
+ * 
  * @param Status Rows
  * @desc キャラを縦に並べる数。
  * @type number
@@ -78,7 +80,7 @@
  * @default 
  * 
  * @param Display Text
- * @desc 表示するテキスト。,区切りで 内容,x,y,横幅,文字サイズ,文字色ID,アウトライン色ID,フォント名 。値がなければデフォルト。
+ * @desc 表示するテキスト。,区切りで 内容,x,y,横幅,文字サイズ,文字色ID,アウトライン色ID,フォント名。値がなければデフォルト。
  * @type string[]
  * @default ["a.name(),10,10,30","a.mhp,40,10,30,38,10,,10"]
  * 
@@ -104,6 +106,8 @@
  *
  * ■フォントを変えた場合、一度の読み込みでは表示されない可能性があります。
  *　 他のフォントロード系プラグインなどでカバーする事を推奨します。
+ * 　デフォルトの数字フォントはrmmz-numberfont、通常フォントはrmmz-mainfontを指定してください。
+ * 　他のフォントを使用する場合はkzmz_FontRegistrationを導入する必要があります。
  * 
  * ■読み取るメモについて（●.meta.○）
  *　 ●の箇所で場所を指定　a.actor()　　　  ＝アクター
@@ -229,7 +233,6 @@
             if (textColor >= 0) { this.changeTextColor(ColorManager.textColor(textColor)); }
             if (outlineColor >= 0) { this.contents.outlineColor = ColorManager.textColor(outlineColor); }
             if (fontSize >= 0) { this.contents.fontSize = fontSize; }
-
 
             this.drawText(value, x, y, width);
 
