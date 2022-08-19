@@ -26,12 +26,6 @@
  * @min 0
  * @default 40
  *
- * @param Category Window Column
- * @desc カテゴリ窓項目数
- * @type number
- * @min 0
- * @default 5
- *
  * @param Item Window X
  * @desc アイテム窓x
  * @type number
@@ -70,7 +64,7 @@
  * 
  * @param CategoryInfoData
  * @desc カテゴリー窓・項目データ
- * @type CategoryData
+ * @type struct<CategoryData>[]
  * @default 
  * 
  */
@@ -83,6 +77,11 @@
  * 
  * @param FilterCondition
  * @desc フィルター条件
+ * @type string
+ * @default 
+ * 
+ * @param symbol
+ * @desc カテゴリーシンボル（識別ID）（英字）
  * @type string
  * @default 
  * 
@@ -99,19 +98,49 @@
     const categoryWindowData = {};
     categoryWindowData.x = Number(parameters['Catergory Window X'] || 0);
     categoryWindowData.y = Number(parameters['Catergory Window Y'] || 0);
-    categoryWindowData.width = Number(parameters['Catergory Window Width'] || 100);
-    categoryWindowData.height = Number(parameters['Catergory Window Height'] || 40);
-    categoryWindowData.column = Number(parameters['Catergory Window Column'] || 5);
+    categoryWindowData.width = Number(parameters['Catergory Window Width'] || 800);
+    categoryWindowData.height = Number(parameters['Catergory Window Height'] || 60);
+    
     categoryWindowData.infoData = JSON.parse(parameters['CategoryInfoData']).map(
         function (e) {
             let newObj = JSON.parse(e);
             return newObj;
         }
     ) || [];
+
+    categoryWindowData.column = categoryWindowData.infoData.length;
     
     const kz_Window_ItemCategory_prototype_initialize = Window_ItemCategory.prototype.initialize;
     Window_ItemCategory.prototype.initialize = function(rect) {
         let newRect = new Rectangle(categoryWindowData.x, categoryWindowData.y, categoryWindowData.width, categoryWindowData.height)
         kz_Window_ItemCategory_prototype_initialize.call(this, newRect);
+    };
+
+    Window_ItemCategory.prototype.maxCols = function() {
+        return categoryWindowData.infoData.length;
+    };
+
+    Window_ItemCategory.prototype.makeCommandList = function() {
+        categoryWindowData.infoData.forEach(element => {
+            this.addCommand(element.DisplayName, element.symbol)
+        }, this);
+    }
+
+    Window_ItemCategory.prototype.itemWidth = function() {
+        return Math.floor(this.innerWidth / this.maxCols());
+    };
+    
+    Window_ItemCategory.prototype.itemHeight = function() {
+        return this.innerHeight;
+    };
+
+    Window_ItemList.prototype.includes = function(item) {
+        const targetInfo = categoryWindowData.infoData.find(e => {
+            return e.symbol == this._category;
+        }, this)
+
+        if (!targetInfo) return false;
+
+        return eval(targetInfo.FilterCondition);
     };
 })();

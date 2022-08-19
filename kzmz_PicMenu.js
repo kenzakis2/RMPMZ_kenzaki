@@ -284,8 +284,6 @@
             const editedRect = this.itemRect(i);
             editedRect.x = editedRect.x + Number(itemData.endx);
             editedRect.y = editedRect.y + Number(itemData.endy);
-            console.log(editedRect.x);
-            console.log(editedRect.y);
             
             let sprite = new Sprite_MenuCommand(itemData, editedRect, element.symbol, this, i);
             sprite.bitmap = ImageManager.loadSystem(symbolData ? symbolData.pic : "");
