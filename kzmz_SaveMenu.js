@@ -79,6 +79,11 @@
  * @type number
  * @default 0
  * 
+ * @param Empty Text Elements
+ * @desc セーブデータが無い際の文字データ（配置などを含む）
+ * @type struct<WindowInfoText>[]
+ * @default []
+ * 
  * @param Screenshot
  * @desc 詳細窓に於けるスクリーンショットの座標。スケール0で非表示。ある程度セーブデータサイズに影響あり
  * @type struct<ScreenshotData>
@@ -98,23 +103,7 @@
  * @desc カーソル画像周辺
  * @type struct<CursorData>
  * @default 
- * 
- * 
- * 
- *  @help
- * 使用する画像は img/savescene　内。
- * デフォルトでは無いのでフォルダを作って下さい。
- * 
- * テキストの色指定はwindow.pngのカラーパレット
- * インデックスです。変更する場合は0から数えて記載して下さい。
- * 
- * カーソル用画像はアニメ分に横で切り分けて作ります。
- * 
- * 他詳細はサンプルゲームにて説明していますので
- * 実際触ってみて解析してみて下さい。
- * 
- */ 
-
+ */
 
 /*~struct~CursorData:
  * 
@@ -211,8 +200,8 @@
  * @desc 実データ。evalによって評価されます。例:$gameParty.size()　←パーティ人数
  * @type string
  * 
- */ 
- /*~struct~WindowInfoText:
+*/
+/*~struct~WindowInfoText:
  * 
  * @param data
  * @desc データ内容。例: info.count等
@@ -312,7 +301,6 @@
  * @type number
  * @default 21
 */
- 
 
 (() => {
     const script = "kzmz_SaveMenu";
@@ -343,6 +331,8 @@
 
     const _sceneBackground = parameters['Scene Background'];
     const _displayWindowBack = (parameters['Display Window Frame'] == 'true')
+
+    const _empty_Text = JSON.parse(parameters['Empty Text Elements']).map(e => JSON.parse(e)) || [];;
 
     const kz_SceneManager_snapForBackground = SceneManager.snapForBackground;
     SceneManager.snapForBackground = function () {
@@ -421,7 +411,7 @@
         this.addChild(this.extraCursorSprite);
     };
 
-    Window_SavefileList.prototype.refreshCursor = function() {
+    Window_SavefileList.prototype.refreshCursor = function () {
         this.setCursorRect(0, 0, 0, 0);
         if (this.index() >= 0) {
             const rect = this.itemRect(this.index());
@@ -465,11 +455,25 @@
         if (!info) {
             this.resetTextColor();
             this.changePaintOpacity(this.isEnabled(savefileId));
-            this.drawTitle(savefileId, rect.x, rect.y + 4);
+            this.drawTitle(savefileId, rect.x, rect.y);
         }
         if (info) {
             this.drawContents(info, rect, savefileId);
         }
+    };
+
+    Window_SavefileList.prototype.drawTitle = function (savefileId, x, y) {
+        _empty_Text.forEach(function (obj) {
+            const currentOutlineColor = this.contents.outlineColor;
+            if (obj.fontFace) { this.contents.fontFace = obj.fontFace; }
+            if (obj.fontColor > 0) { this.changeTextColor(ColorManager.textColor(Number(obj.fontColor))); }
+            if (obj.outlineColor > 0) { this.contents.outlineColor = ColorManager.textColor(Number(obj.outlineColor)); }
+            if (obj.fontSize > 0) { this.contents.fontSize = Number(obj.fontSize); }
+
+            this.drawText(eval(obj.data), x + Number(obj.x), y + Number(obj.y), Number(obj.width));
+            this.resetFontSettings();
+            this.contents.outlineColor = currentOutlineColor;
+        }, this);
     };
 
     Window_SavefileList.prototype.drawContents = function (info, rect, currentId) {
@@ -559,9 +563,8 @@
         const rect = this.baseTextRect();
         this.contents.clear();
 
-        
-        if (!this._item) 
-        {
+
+        if (!this._item) {
             _detailWindowPicture.forEach(function (obj, i) {
                 this._picSpriteList[i].bitmap = null;
             }, this);
@@ -644,38 +647,36 @@
     function Sprite_SaveCursor() {
         this.initialize(...arguments);
     }
-    
+
     Sprite_SaveCursor.prototype = Object.create(Sprite.prototype);
     Sprite_SaveCursor.prototype.constructor = Sprite_Clickable;
-    
-    Sprite_SaveCursor.prototype.initialize = function() {
+
+    Sprite_SaveCursor.prototype.initialize = function () {
         Sprite.prototype.initialize.call(this);
         this.bitmap = ImageManager.loadSaveScene(_cursorData.pic);
         this._anime_count = 0;
         this._intervalCount = 0;
-        this.setFrame(0,0,Number(_cursorData.width),Number(_cursorData.height))
+        this.setFrame(0, 0, Number(_cursorData.width), Number(_cursorData.height))
     };
-    
-    Sprite_SaveCursor.prototype.update = function() {
+
+    Sprite_SaveCursor.prototype.update = function () {
         Sprite.prototype.update.call(this);
         this.refreshFrame();
     };
 
-    Sprite_SaveCursor.prototype.refreshFrame = function() {
+    Sprite_SaveCursor.prototype.refreshFrame = function () {
         this._intervalCount++;
-        if (this._intervalCount > Number(_cursorData.interval))
-        {
+        if (this._intervalCount > Number(_cursorData.interval)) {
             this._intervalCount = 0;
             this._anime_count++;
-            if (this._anime_count > this.maxFrame())
-            {
+            if (this._anime_count > this.maxFrame()) {
                 this._anime_count = 0;
             }
-            this.setFrame(this._anime_count * Number(_cursorData.width) ,0,Number(_cursorData.width),Number(_cursorData.height));
+            this.setFrame(this._anime_count * Number(_cursorData.width), 0, Number(_cursorData.width), Number(_cursorData.height));
         }
     };
 
-    Sprite_SaveCursor.prototype.maxFrame = function() {
+    Sprite_SaveCursor.prototype.maxFrame = function () {
         return Number(_cursorData.anime_count) - 1;
     };
 
