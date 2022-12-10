@@ -91,7 +91,7 @@ function LinkActionManager() {
     // a = Game_Battler, b = Game_Battler[], action = Game_Action, user = Game_Battler
     LinkActionManager.createLinkedAction = function(a, b, action, user)
     {
-        
+        if (!a || !b || !action || !user) return;
         if (action.item().meta && action.item().meta.linkirreplacible) return;
         let subject = {};
         let targets = {};
@@ -101,7 +101,6 @@ function LinkActionManager() {
 
         targets.isSelf = b.some(e => LinkActionManager.isSameBattler(e, user));
         targets.isAlly = b.some(e => e.isActor() === user.isActor());
- 
         user.states().forEach(state => {
             if (state.meta && state.meta.linkaction && state.meta.linkcondition && !state.meta.link_crash)
             {
@@ -114,7 +113,6 @@ function LinkActionManager() {
 
                 let realTargetIndex = chainTarget[0] == "chain" ? b[0].index() : a.index();
 
-                console.log(Number(chainTarget[1]));
                 newAction.setTarget(realTargetIndex)
                 newAction.setSkill(Number(chainTarget[1]));
 
@@ -126,7 +124,7 @@ function LinkActionManager() {
 
     LinkActionManager.getConditionTagFromState = function(state)
     {
-        const matcher = /<linkcondition>[\W]+(.+)<\/linkcondition>/is;
+        const matcher = /<linkcondition>[\r\n]+(.+)<\/linkcondition>/is;
         if (state)
         {
             const regExResult = state.note.match(matcher);
