@@ -408,18 +408,22 @@
             this.setBackgroundType(2);
         }
         this.extraCursorSprite = new Sprite_SaveCursor();
-        this.addChild(this.extraCursorSprite);
+        this._clientArea.addChild(this.extraCursorSprite);
     };
 
     Window_SavefileList.prototype.refreshCursor = function () {
         this.setCursorRect(0, 0, 0, 0);
+    };
+
+    const _kzmz_Window_SavefileList_prototype__updateCursor = Window_SavefileList.prototype._updateCursor;
+    Window_SavefileList.prototype._updateCursor = function() {
+        _kzmz_Window_SavefileList_prototype__updateCursor.call(this);
         if (this.index() >= 0) {
             const rect = this.itemRect(this.index());
             this.extraCursorSprite.x = rect.x + Number(_cursorData.x);
             this.extraCursorSprite.y = rect.y + Number(_cursorData.y);
         }
     };
-
 
     Window_SavefileList.prototype.setDetailWindow = function (detailWindow) {
         this._detailWindow = detailWindow;
