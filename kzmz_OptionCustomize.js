@@ -448,9 +448,22 @@
             this.drawDragBar(index, newRect);
         }
         else {
-            //this.drawOnOffButton(index, newRect);
+            this.drawOnOffButton(index, newRect);
         }
     };
+
+    Window_Options.prototype.drawOnOffButton = function (index, graphicRect) {
+        let symbol = this.commandSymbol(index);
+        let t = this.findSymbolFromList(symbol);
+        let value = this.getConfigValue(symbol)
+        let targetSprite = this._baseSprites.find(e => e._symbol == symbol)
+
+        if (targetSprite)
+        {
+            //change Value only
+            targetSprite.bitmap = value ? ConfigManager.buttonBitmapOnL : ConfigManager.buttonBitmapOffL;
+        }
+    }
 
     Window_Options.prototype.isBarSymbol = function (symbol) {
         let targetOption = this.findSymbolFromList(symbol);
