@@ -430,6 +430,29 @@
         }
     }
 
+    Window_Options.prototype.drawOnOffButton = function (index, graphicRect) {
+        let symbol = this.commandSymbol(index);
+        let t = this.findSymbolFromList(symbol);
+        let value = this.getConfigValue(symbol)
+        let targetSprite = this._baseSprites.find(e => e._symbol == symbol)
+
+        let targetBitmap = value ? ConfigManager.buttonBitmapOnL : ConfigManager.buttonBitmapOffL;
+
+        if (targetSprite)
+        {
+            //change Value only
+            targetSprite.bitmap = targetBitmap;
+        }
+        else
+        {
+            var newTargetSprite = new Sprite_Options(targetBitmap, symbol)
+            newTargetSprite.x = graphicRect.x;
+            newTargetSprite.y = graphicRect.y;
+            this._baseSprites.push(newTargetSprite);
+            this.addChild(newTargetSprite);
+        }
+    }
+
     Window_Options.prototype.drawItem = function (index) {
         let rect = this.itemRect(index);
         let titleWidth = titleTextWidth;
@@ -451,19 +474,6 @@
             this.drawOnOffButton(index, newRect);
         }
     };
-
-    Window_Options.prototype.drawOnOffButton = function (index, graphicRect) {
-        let symbol = this.commandSymbol(index);
-        let t = this.findSymbolFromList(symbol);
-        let value = this.getConfigValue(symbol)
-        let targetSprite = this._baseSprites.find(e => e._symbol == symbol)
-
-        if (targetSprite)
-        {
-            //change Value only
-            targetSprite.bitmap = value ? ConfigManager.buttonBitmapOnL : ConfigManager.buttonBitmapOffL;
-        }
-    }
 
     Window_Options.prototype.isBarSymbol = function (symbol) {
         let targetOption = this.findSymbolFromList(symbol);
