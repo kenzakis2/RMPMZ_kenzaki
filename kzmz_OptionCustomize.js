@@ -258,7 +258,6 @@
     const kz_Scene_Boot_loadSystemImages = Scene_Boot.prototype.loadSystemImages;
     Scene_Boot.prototype.loadSystemImages = function () {
         kz_Scene_Boot_loadSystemImages.call(this);
-        console.log(barBitmap);
         ConfigManager.barBitmap = ImageManager.loadSystem(barBitmap);
         ConfigManager.dialBitmap = ImageManager.loadSystem(dialBitmap);
         ConfigManager.buttonBitmapOnL = ImageManager.loadSystem(buttonBitmapOn);
@@ -277,7 +276,7 @@
     Scene_Options.prototype.createOptionsWindow = function() {
         const rect = new Rectangle(_wX, _wY, _wW, _wH);
         this._optionsWindow = new Window_Options(rect);
-        this._optionsWindow.setHandler("cancel", this.popScene.bind(this));
+        this._optionsWindow.setHandler("cancel", this.optionCancel.bind(this));
         this.addWindow(this._optionsWindow);
     };
 
@@ -292,6 +291,10 @@
 
     Scene_Options.prototype.categoryOk = function() {
         this._optionsWindow.activate();
+    };
+
+    Scene_Options.prototype.optionCancel = function() {
+        this._optionCategoryWindow.activate();
     };
 
     const kz_Window_Options_prototype_initialize = Window_Options.prototype.initialize;
@@ -334,15 +337,6 @@
         }, this);
     };
 
-    Window_Options.prototype.drawItem = function(index) {
-        const title = this.commandName(index);
-        const rect = this.itemLineRect(index);
-        const statusWidth = statusTextWidth;
-        const titleWidth = titleTextWidth;
-        this.resetTextColor();
-        this.drawText(title, rect.x, rect.y, titleWidth, "left");
-    };
-
     Window_Options.prototype.getConfigValue = function (symbol) {
         let tResult = eval(symbol);
         if (!tResult) {
@@ -358,8 +352,13 @@
     };
 
     Window_Options.prototype.setConfigValue = function (symbol, volume) {
-        console.log(volume);
-        eval(symbol + '=' + volume);
+        let targetValue = volume;
+        if (this.isBarSymbol(symbol))
+        {
+            let t = this.findSymbolFromList(symbol);
+            targetValue = Number(targetValue).clamp(t.typeMin, t.typeMax);
+        }
+        eval(symbol + '=' + targetValue);
     };
 
     Window_Options.prototype.volumeOffset = function () {
@@ -398,8 +397,9 @@
         if (this._baseSprites.some(e => e._symbol == symbol))
         {
             //change Value only
+            let spriteBar = this._baseSprites.find(e => e._symbol == symbol);
             let existingDial = this._cursorSprites.find(e => e._symbol == symbol);
-            existingDial.x = baseX + this._baseSprites[0].width * value - dialBitmapObject.width / 2;
+            existingDial.x = baseX + spriteBar.width * value - dialBitmapObject.width / 2;
             existingDial.y = baseY + (barBitmapObject.height - dialBitmapObject.height) / 2;
 
             let existingText = this._textSprites.find(e => e._symbol == symbol);
