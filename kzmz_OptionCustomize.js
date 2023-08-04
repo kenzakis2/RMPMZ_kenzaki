@@ -113,6 +113,12 @@
  * @min -9999
  * @default 0
  * 
+ * @param HeightPerRow
+ * @desc マスごとの高さ
+ * @type number
+ * @min -9999
+ * @default 0
+ * 
  * @param rectXoverhead
  * @desc 選択マス内での位置調整X
  * @type number
@@ -126,7 +132,12 @@
  * @default 0
  * 
  * @param WindowBack
- * @desc 背景名。空白の場合デフォルト。
+ * @desc ウィンドウ背景名。空白の場合デフォルト。
+ * @type string
+ * @default 
+ * 
+ * @param SceneBack
+ * @desc シーン全体背景名。空白の場合なし。
  * @type string
  * @default 
  * 
@@ -230,7 +241,9 @@
     let _wOY = Number(parameters['WindowYoverhead']) || 0; 
     let _rOX = Number(parameters['rectXoverhead']) || 0; 
     let _rOY = Number(parameters['rectYoverhead']) || 0; 
+    let _heightperRow = Number(parameters['HeightPerRow']) || 0; 
     let _OWBack = String(parameters['WindowBack']) || ""; 
+    let _SBack = String(parameters['SceneBack']) || ""; 
 
     let _CwX = Number(parameters['CWindowX']) || 0; 
     let _CwY = Number(parameters['CWindowY']) || 0; 
@@ -297,6 +310,14 @@
         this._optionCategoryWindow.activate();
     };
 
+    const kz_Scene_Options_prototype_createBackground = Scene_Options.prototype.createBackground;
+    Scene_Options.prototype.createBackground = function() {
+        kz_Scene_Options_prototype_createBackground.call(this);
+        this._backgroundSprite2 = new Sprite();
+        this._backgroundSprite2.bitmap = ImageManager.loadSystem(_SBack);
+        this.addChild(this._backgroundSprite2);
+    };
+
     const kz_Window_Options_prototype_initialize = Window_Options.prototype.initialize;
     Window_Options.prototype.initialize = function (rect) {
         this._category = null;
@@ -349,6 +370,10 @@
             }
         }
         return tResult;
+    };
+
+    Window_Options.prototype.itemHeight = function() {
+        return _heightperRow;
     };
 
     Window_Options.prototype.setConfigValue = function (symbol, volume) {
@@ -458,7 +483,7 @@
         let titleWidth = titleTextWidth;
         this.resetTextColor();
         this.changePaintOpacity(this.isCommandEnabled(index));
-        this.drawText(this.commandName(index), rect.x, rect.y, titleWidth, 'left');
+        this.drawTextEx(this.commandName(index).replace("\\n", "\n"), rect.x, rect.y, titleWidth);
         
 
         let symbol = this.commandSymbol(index);
@@ -475,6 +500,23 @@
         }
     };
 
+    Window_Options.prototype.processControlCharacter = function(textState, c) {
+        if (c === "\n") {
+            this.processNewLine(textState);
+        }
+        if (c === "\x1b") {
+            const code = this.obtainEscapeCode(textState);
+            this.processEscapeCharacter(code, textState);
+        }
+    };
+    
+    Window_Options.prototype.processNewLine = function(textState) {
+        textState.x = textState.startX;
+        textState.y += textState.height;
+        textState.height = this.calcTextHeight(textState);
+    };
+    
+
     Window_Options.prototype.isBarSymbol = function (symbol) {
         let targetOption = this.findSymbolFromList(symbol);
         return targetOption.isNumberType;
@@ -484,7 +526,7 @@
         return this.isBarSymbol(symbol);
     };
 
-    Window_Options.prototype.processTouch = function (triggered) {
+    Window_Options.prototype.processTouch = function () {
         if (!this.isOpenAndActive()) return;
 
         let lastIndex = this.index();
@@ -498,7 +540,7 @@
                 this.changeValue(symbol,v);
             }
             else if (hitIndex === this.index()) {
-                if (triggered && this.isTouchOkEnabled()) {
+                if (TouchInput.isTriggered()) {
                     this.processOk();
                 }
             }
@@ -512,9 +554,16 @@
                 this.cursorDown();
             }
         }
+        else if (TouchInput.isCancelled()) {
+            this.onTouchCancel();
+        }
         if (this.index() !== lastIndex) {
             SoundManager.playCursor();
         }
+    };
+
+    Window_Options.prototype.onTouchCancel = function() {
+        this.processCancel();
     };
 
     Window_Options.prototype.xToValue = function (symbol, x) {
@@ -527,7 +576,8 @@
         return value;
     };
 
-    
+    Window_Options.prototype.drawBackgroundRect = function(rect) {   
+    };
 
     function Window_OptionCategory() {
         this.initialize(...arguments);
@@ -567,6 +617,9 @@
         if (this._itemWindow) {
             this._itemWindow.setCategory(this.currentSymbol());
         }
+    };
+
+    Window_OptionCategory.prototype.drawBackgroundRect = function(rect) {   
     };
 
 
