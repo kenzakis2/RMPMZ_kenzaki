@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc メニューコマンドの画像化（動き有） - v1.01
+ * @plugindesc バトルコマンドの画像化（動き有） - v1.01
  * @author 剣崎宗二
  * 
  * @target MZ
@@ -93,7 +93,7 @@
  * @type struct<MenuItemData>[]
  * @default []
  *
- * @help kz_PicMenuEx.js
+ * @help kzmz_PicBattleMenu.js
  * 
  * 使用する画像は全て img/system　フォルダ内に入れてください。
  *
@@ -115,12 +115,8 @@
  * ■デフォルトsymbol名一覧
  * 　アイテム　…　item
  * 　スキル　　…　skill
- * 　装備　　　…　equip
- * 　ステータス…　status
- * 　並び替え　…　formation
- * 　オプション…　options
- * 　セーブ　　…　save
- * 　ゲーム終了…　gameEnd
+ * 　攻撃　　　…　attack
+ * 　防御　　　…　guard
  *
  * 別のプラグインで新しいコマンドを追加した場合
  * それらのsymbolを入力する事で同様に対応可能です。
@@ -129,7 +125,7 @@
  * 
  * 
  * 更新履歴
- * v1.01 - Experimentalをベースに作り直し
+ * v1.00 - kzmz_PicMenuをベースに製造
  *
 */
 /*~struct~SymbolChart:
@@ -139,6 +135,10 @@
  * 
  * @param pic
  * @desc ピクチャ名
+ * @type string
+ * 
+ * @param ext
+ * @desc スキル等同じシンボルで複数ある物の指定(skillの場合、typeId)
  * @type string
  * 
 */
@@ -187,7 +187,7 @@
 
 (() => {
 
-    const script = "kzmz_PicMenu";
+    const script = "kzmz_PicBattlerMenu";
     const parameters = PluginManager.parameters(script);
 
     const _cmdList = JSON.parse(parameters['Item Data']).map(
@@ -209,8 +209,13 @@
     function findwithSameSymbol(array, element) {
         if (!array || !element) return undefined;
 
-        for (let i = 0; i < array.length; i++) {
-            if (array[i].symbol == element.symbol) return array[i];
+        for (let i = 0; i < array.length; i++) { 
+            if (array[i].symbol == element.symbol){
+                if (!element.ext || element.ext == array[i].ext) 
+                {
+                    return array[i];
+                }
+            }
         }
 
         return undefined;
@@ -234,11 +239,11 @@
     const _windowBack = parameters['window background file'] || '';
 
 
-    const kz_Window_MenuCommand_prototype_initialize = Window_MenuCommand.prototype.initialize;
-    Window_MenuCommand.prototype.initialize = function (rect) {
+    const kz_Window_ActorCommand_prototype_initialize = Window_ActorCommand.prototype.initialize;
+    Window_ActorCommand.prototype.initialize = function (rect) {
         this._commandSprites = [];
         const properRect = new Rectangle(_CwindowX, _CwindowY, _CwindowWidth, _CwindowHeight)
-        kz_Window_MenuCommand_prototype_initialize.call(this, properRect);
+        kz_Window_ActorCommand_prototype_initialize.call(this, properRect);
         if (_windowBack != '') {
             this.setBackgroundType(2);
             this.createBackSprite();
@@ -247,36 +252,45 @@
         this.select(0);
     };
 
-    Window_MenuCommand.prototype.createBackSprite = function () {
+    Window_ActorCommand.prototype.createBackSprite = function () {
         this._backSprite = new Sprite();
         this._backSprite.bitmap = ImageManager.loadSystem(_windowBack);
         this.addChildToBack(this._backSprite);
     };
 
-    Window_MenuCommand.prototype.drawItem = function (index) {
+    Window_ActorCommand.prototype.drawItem = function (index) {
     };
 
-    Window_MenuCommand.prototype.drawBackgroundRect = function (rect) {
+    Window_ActorCommand.prototype.drawBackgroundRect = function (rect) {
     };
 
-    const kz_Window_MenuCommand_prototype__updateCursor = Window_MenuCommand.prototype._updateCursor;
-    Window_MenuCommand.prototype._updateCursor = function () {
-        kz_Window_MenuCommand_prototype__updateCursor.call(this);
+    const kz_Window_ActorCommand_prototype_refresh = Window_ActorCommand.prototype.refresh
+    Window_ActorCommand.prototype.refresh = function() {
+        kz_Window_ActorCommand_prototype_refresh.call(this);
+        if (!this._commandSprites || this._commandSprites.length < 1)
+        {
+            this.makeCommandSprites();
+        }
+    };
+    
+
+    const kz_Window_ActorCommand_prototype__updateCursor = Window_ActorCommand.prototype._updateCursor;
+    Window_ActorCommand.prototype._updateCursor = function () {
+        kz_Window_ActorCommand_prototype__updateCursor.call(this);
         this._cursorSprite.visible = false;
     };
 
-    Window_MenuCommand.prototype.processTouch = function () {
-        if (this.isOpenAndActive()) {
-            if (TouchInput.isCancelled()) {
-                this.onTouchCancel();
-            }
-        }
-    };
+    // Window_ActorCommand.prototype.processTouch = function () {
+    //     if (this.isOpenAndActive()) {
+    //         console.log("Checking touch")
+    //         if (TouchInput.isCancelled()) {
+    //             this.onTouchCancel();
+    //         }
+    //     }
+    // };
 
-    Window_MenuCommand.prototype.makeCommandSprites = function () {
+    Window_ActorCommand.prototype.makeCommandSprites = function () {
         this._commandSprites = [];
-        this.clearCommandList();
-        this.makeCommandList();
         this._list.forEach(function (element, i) {
             const symbolData = findwithSameSymbol(_symbolList, element);
 
@@ -290,16 +304,16 @@
             editedRect.x = editedRect.x + Number(itemData.endx);
             editedRect.y = editedRect.y + Number(itemData.endy);
 
-            let sprite = new Sprite_MenuCommand(itemData, editedRect, element.symbol, this, i);
+            let sprite = new Sprite_BattleActorCommand(itemData, editedRect, element.symbol, this, i);
             sprite.bitmap = ImageManager.loadSystem(symbolData ? symbolData.pic : "");
             this._commandSprites.push(sprite);
             this.addChild(sprite);
         }, this);
     };
 
-    const kz_Window_MenuCommand_prototype_setHandler = Window_MenuCommand.prototype.setHandler;
-    Window_MenuCommand.prototype.setHandler = function (symbol, method) {
-        kz_Window_MenuCommand_prototype_setHandler.call(this, symbol, method);
+    const kz_Window_ActorCommand_prototype_setHandler = Window_ActorCommand.prototype.setHandler;
+    Window_ActorCommand.prototype.setHandler = function (symbol, method) {
+        kz_Window_ActorCommand_prototype_setHandler.call(this, symbol, method);
         this._commandSprites.forEach(function (element) {
             if (element.getSymbol() == symbol) {
                 element.setButtonHandler(method);
@@ -307,31 +321,31 @@
         }, this);
     };
 
-    Window_MenuCommand.prototype.itemWidth = function () {
+    Window_ActorCommand.prototype.itemWidth = function () {
         return _MenuIconWidth;
     };
 
-    Window_MenuCommand.prototype.itemHeight = function () {
+    Window_ActorCommand.prototype.itemHeight = function () {
         return _MenuIconHeight;
     };
 
 
-    const kz_Window_MenuCommand_prototype_itemRect = Window_MenuCommand.prototype.itemRect;
-    Window_MenuCommand.prototype.itemRect = function (index) {
-        const rect = kz_Window_MenuCommand_prototype_itemRect.call(this, index);
+    const kz_Window_ActorCommand_prototype_itemRect = Window_ActorCommand.prototype.itemRect;
+    Window_ActorCommand.prototype.itemRect = function (index) {
+        const rect = kz_Window_ActorCommand_prototype_itemRect.call(this, index);
         const maxCols = this.maxCols();
         rect.x += _xOverhead + (index % maxCols) * _IconitemRect;
         rect.y = Math.floor(index / maxCols) * (rect.height + _IconitemRect) - this._scrollY + _yOverhead;
         return rect;
     };
 
-    Window_MenuCommand.prototype.maxCols = function () {
+    Window_ActorCommand.prototype.maxCols = function () {
         return _iconcols;  //横列数
     };
 
-    const kz_Window_MenuCommand_prototype_select = Window_MenuCommand.prototype.select;
-    Window_MenuCommand.prototype.select = function (index) {
-        kz_Window_MenuCommand_prototype_select.call(this, index);
+    const kz_Window_ActorCommand_prototype_select = Window_ActorCommand.prototype.select;
+    Window_ActorCommand.prototype.select = function (index) {
+        kz_Window_ActorCommand_prototype_select.call(this, index);
         this._commandSprites.forEach(function (element) {
             element.isSelected = false;
         }, this)
@@ -341,27 +355,27 @@
         }
     };
 
-    const kz_Window_MenuCommand_prototype_ensureCursorVisible = Window_MenuCommand.prototype.ensureCursorVisible
-    Window_MenuCommand.prototype.ensureCursorVisible = function (smooth) {
+    const kz_Window_ActorCommand_prototype_ensureCursorVisible = Window_ActorCommand.prototype.ensureCursorVisible
+    Window_ActorCommand.prototype.ensureCursorVisible = function (smooth) {
         if (!_cursorDisplay) {
             return false;
         }
-        return kz_Window_MenuCommand_prototype_ensureCursorVisible.call(this, smooth);
+        return kz_Window_ActorCommand_prototype_ensureCursorVisible.call(this, smooth);
     };
 
-    const kz_Window_MenuCommand_prototype_processCursorMove = Window_MenuCommand.prototype.processCursorMove;
-    Window_MenuCommand.prototype.processCursorMove = function () {
+    const kz_Window_ActorCommand_prototype_processCursorMove = Window_ActorCommand.prototype.processCursorMove;
+    Window_ActorCommand.prototype.processCursorMove = function () {
         if (!this.isControlAllowed()) return;
-        kz_Window_MenuCommand_prototype_processCursorMove.call(this);
+        kz_Window_ActorCommand_prototype_processCursorMove.call(this);
     };
 
-    const kz_Window_MenuCommand_prototype_processHandling = Window_MenuCommand.prototype.processHandling;
-    Window_MenuCommand.prototype.processHandling = function () {
+    const kz_Window_ActorCommand_prototype_processHandling = Window_ActorCommand.prototype.processHandling;
+    Window_ActorCommand.prototype.processHandling = function () {
         if (!this.isControlAllowed()) return;
-        kz_Window_MenuCommand_prototype_processHandling.call(this);
+        kz_Window_ActorCommand_prototype_processHandling.call(this);
     };
 
-    Window_MenuCommand.prototype.isControlAllowed = function () {
+    Window_ActorCommand.prototype.isControlAllowed = function () {
         return !this._commandSprites.some(function (e) {
             return e.animeFrameCount >= 0;
         }, this)
@@ -369,14 +383,14 @@
 
 
 
-    function Sprite_MenuCommand() {
+    function Sprite_BattleActorCommand() {
         this.initialize.apply(this, arguments);
     }
 
-    Sprite_MenuCommand.prototype = Object.create(Sprite_Clickable.prototype);
-    Sprite_MenuCommand.prototype.constructor = Sprite_MenuCommand;
+    Sprite_BattleActorCommand.prototype = Object.create(Sprite_Clickable.prototype);
+    Sprite_BattleActorCommand.prototype.constructor = Sprite_BattleActorCommand;
 
-    Sprite_MenuCommand.prototype.initialize = function (cmdData, baseRect, symbol, parent, index) {
+    Sprite_BattleActorCommand.prototype.initialize = function (cmdData, baseRect, symbol, parent, index) {
         Sprite_Clickable.prototype.initialize.call(this);
         this._symbol = symbol;
         this._index = index;
@@ -393,28 +407,28 @@
         this.anchor.y = 0.5;
     };
 
-    Sprite_MenuCommand.prototype.getSymbol = function () {
+    Sprite_BattleActorCommand.prototype.getSymbol = function () {
         return this._symbol;
     };
 
-    Sprite_MenuCommand.prototype.setButtonHandler = function (method) {
+    Sprite_BattleActorCommand.prototype.setButtonHandler = function (method) {
         this._buttonHandler = method;
     };
 
-    Sprite_MenuCommand.prototype.update = function () {
+    Sprite_BattleActorCommand.prototype.update = function () {
         Sprite_Clickable.prototype.update.call(this);
         this.updateRectFit();
         this.updateSelected();
         this.updateAnimeMove();
     };
 
-    Sprite_MenuCommand.prototype.updateRectFit = function () {
+    Sprite_BattleActorCommand.prototype.updateRectFit = function () {
         if (!this.bitmap || !this.bitmap.isReady()) return;
         this.scale.x = _MenuIconWidth / this.bitmap.width;
         this.scale.y = _MenuIconHeight / this.bitmap.height;
     }
 
-    Sprite_MenuCommand.prototype.updateSelected = function () {
+    Sprite_BattleActorCommand.prototype.updateSelected = function () {
         if (!this.parent.isControlAllowed()) return;  //移動中は拡縮なし
 
         if (!this.isSelected) {
@@ -430,7 +444,7 @@
         this.scale.y *= expScale;
     }
 
-    Sprite_MenuCommand.prototype.updateAnimeMove = function () {
+    Sprite_BattleActorCommand.prototype.updateAnimeMove = function () {
         if (!this.baseRect) {
             this.visible = false;
             return;
@@ -460,7 +474,7 @@
         this.animeFrameCount++;
     }
 
-    Sprite_MenuCommand.prototype.onClick = function () {
+    Sprite_BattleActorCommand.prototype.onClick = function () {
         if (!this._buttonHandler) {
             SoundManager.playBuzzer();
             return;

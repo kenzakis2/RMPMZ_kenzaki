@@ -6,7 +6,7 @@
  * 
  * @help
  * タグは
- * スキルタグ：
+ * 合成ターゲットスキルタグ：
  * <asTag: ofs> スキルのジャンル指定
  * 
  * <addToSkill:3,4>　スキル3に4を合成
@@ -14,6 +14,12 @@
  * 
  * 合成されるのは式と特徴と説明文
  * 式/説明文に<original> があるとそこに元のスキルの式を埋め込む（ないと差し替えられる）
+ * 
+ * 合成するスキルのタグ(特例で合成スキル自体からロードできない物)：
+ * <sf_speed:-30>　速度補正 加算
+ * <sf_repeats: +1> 連続回数　加算
+ * <sf_hitType: 0> 命中タイプ（必中0 物理1 魔法2）　差し替え
+ * 
  */
 (() => {
     const kz_DataManager_isSkill = DataManager.isSkill;
@@ -96,7 +102,6 @@
             }
             originalItem.skillFuseData.asTag.forEach(e => {
                 if (obj.skillFuseData.addToTagReal && obj.skillFuseData.addToTagReal[e]) {
-                    console.log(obj.skillFuseData.addToTagReal[e].id);
                     r = r.concat(obj.skillFuseData.addToTagReal[e])
                 }
             })
@@ -155,8 +160,25 @@
         {
             original.damage.elementId = newSkill.damage.elementId;
         }
-    }
 
-    
+        //以下専用タグ
+        const number_sf_speed = Number(newSkill.meta.sf_speed);
+        if (!Number.isNaN(number_sf_speed))
+        {
+            original.speed += number_sf_speed;
+        }
+
+        const number_sf_repeats = Number(newSkill.meta.sf_repeats);
+        if (!Number.isNaN(number_sf_repeats))
+        {
+            original.repeats += number_sf_repeats;
+        }
+
+        const number_sf_hitType = Number(newSkill.meta.sf_hitType);
+        if (!Number.isNaN(number_sf_hitType))
+        {
+            original.hitType = number_sf_hitType;
+        }
+    }
 
 })();
