@@ -179,14 +179,19 @@
  * @type string
  * 
  * @param data
- * @desc このオプションによって変更される値(ConfigManager.bgmVolume等)。同じものが2つ以上あるとエラーになりますのでご注意ください。
+ * @desc このオプションによって変更される値(ConfigManager.bgmVolume等)。「スクリプト実行」の場合は、実行するスクリプト。同じものが2つ以上あるとエラーになりますのでご注意ください。
  * @type string
  * 
- * @param isNumberType
- * @desc ボタン（true/false値）かバー(数値)か
- * @on 数値
- * @off ボタン
- * @type boolean
+ * @param optionType
+ * @desc ボタン（true/false値）かバー(数値)か、スクリプト実行か
+ * @type select
+ * @option ボタン
+ * @value 1
+ * @option バー
+ * @value 2
+ * @option スクリプト実行
+ * @value 3
+ * 
  * 
  * @param typeMin
  * @desc 数値バー時のみ有効。最小値
@@ -254,7 +259,7 @@
     let optionList = JSON.parse(parameters['Options']).map(
         function (e) {
             let newObj = JSON.parse(e);
-            newObj.isNumberType = eval(newObj.isNumberType);
+            newObj.optionType = eval(newObj.optionType);
             newObj.typeMin = eval(newObj.typeMin);
             newObj.typeMax = eval(newObj.typeMax);
             newObj.keyStep = eval(newObj.keyStep);
@@ -386,6 +391,12 @@
         eval(symbol + '=' + targetValue);
     };
 
+    const kz_Window_Options_prototype_changeValue = Window_Options.prototype.changeValue;
+    Window_Options.prototype.changeValue = function(symbol, value) {
+        if (this.isScriptSymbol(symbol)) return;
+        kz_Window_Options_prototype_changeValue.call(this, symbol, value)
+    };
+
     Window_Options.prototype.volumeOffset = function () {
         let symbol = this.currentSymbol();
         let t = this.findSymbolFromList(symbol);
@@ -495,7 +506,7 @@
             newRect.width -= barOverhead;
             this.drawDragBar(index, newRect);
         }
-        else {
+        else if (!this.isScriptSymbol(symbol)){
             this.drawOnOffButton(index, newRect);
         }
     };
@@ -519,7 +530,12 @@
 
     Window_Options.prototype.isBarSymbol = function (symbol) {
         let targetOption = this.findSymbolFromList(symbol);
-        return targetOption.isNumberType;
+        return targetOption.optionType == 2;
+    };
+
+    Window_Options.prototype.isScriptSymbol = function (symbol) {
+        let targetOption = this.findSymbolFromList(symbol);
+        return targetOption.optionType == 3;
     };
 
     Window_Options.prototype.isVolumeSymbol = function (symbol) {
@@ -559,6 +575,22 @@
         }
         if (this.index() !== lastIndex) {
             SoundManager.playCursor();
+        }
+    };
+
+    const kz_Window_Options_prototype_processOk = Window_Options.prototype.processOk;
+    Window_Options.prototype.processOk = function() {
+        const index = this.index();
+        const symbol = this.commandSymbol(index);
+
+        if (this.isScriptSymbol(symbol))
+        {
+            console.log("executing script type: " + symbol)
+            eval(symbol);
+        }
+        else
+        {
+            kz_Window_Options_prototype_processOk.call(this);
         }
     };
 
