@@ -156,7 +156,7 @@
         kz_Window_ChoiceList_prototype_initialize.call(this, messageWindow);
 
         this._choiceSprite = [];
-        this._cursorSprite = new Sprite_ChoiceCursor($gameSystem.ChoiceCursor.maxFrame, $gameSystem.ChoiceCursor.interval);
+        this._cursorChoiceSprite = new Sprite_ChoiceCursor($gameSystem.ChoiceCursor.maxFrame, $gameSystem.ChoiceCursor.interval);
     };
 
     const kz_Window_ChoiceList_prototype_start = Window_ChoiceList.prototype.start;
@@ -186,7 +186,7 @@
             this.addChild(this._choiceSprite[i]);
         }
 
-        this.addChild(this._cursorSprite);//再追加で一番上に出す
+        this.addChild(this._cursorChoiceSprite);//再追加で一番上に出す
     }
 
     Window_ChoiceList.prototype.removeAllChoiceSprites = function () {
@@ -211,20 +211,20 @@
         kz_Window_ChoiceList_prototype_select.call(this, index);
 
         if ($gameSystem.graphicalChoices) {
-            if (!this._cursorSprite) {
+            if (!this._cursorChoiceSprite) {
                 return;
             }
             if (index < 0 || !this._choiceSprite || !this._choiceSprite[index]) {
-                this._cursorSprite.hide()
+                this._cursorChoiceSprite.hide()
                 return;
             }
-            this._cursorSprite.show();
-            this._cursorSprite.x = this._choiceSprite[index].x + $gameSystem.ChoiceCursor.x;
-            this._cursorSprite.y = this._choiceSprite[index].y + $gameSystem.ChoiceCursor.y;
+            this._cursorChoiceSprite.show();
+            this._cursorChoiceSprite.x = this._choiceSprite[index].x + $gameSystem.ChoiceCursor.x;
+            this._cursorChoiceSprite.y = this._choiceSprite[index].y + $gameSystem.ChoiceCursor.y;
         }
-        else if (this._cursorSprite)
+        else if (this._cursorChoiceSprite)
         {
-            this._cursorSprite.hide();
+            this._cursorChoiceSprite.hide();
         }
     };
 
