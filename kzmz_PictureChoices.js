@@ -88,7 +88,7 @@
 
 
 (function () {
-    const script = "kzmz_PicMenu";
+    const script = "kzmz_PictureChoices";
     const parameters = PluginManager.parameters(script);
 
     const _cursorBmp = String(parameters['Cursor Bitmap Name'] || "");
@@ -98,8 +98,8 @@
     const _c_Interval = Number(parameters['Cursor Frame Spacing']) || 0;
     
     PluginManager.registerCommand(script, "GraphicalChoice", function(args) {
-		const enabled = String(args.switch);
-		$gameSystem.graphicalChoices = enabled;
+		const enabled = args.switch;
+		$gameSystem.graphicalChoices = (enabled == "true");
 	});
 
     ImageManager.loadChoices = function (filename, hue) {
