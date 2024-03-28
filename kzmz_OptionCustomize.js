@@ -230,8 +230,8 @@
     let parameters = PluginManager.parameters('kzmz_OptionCustomize');
     let barBitmap = parameters['barBitmap'] || "OPbar";//バー本体の名前。
     let dialBitmap = parameters['dialBitmap'] || "OPdial"; //ツマミの名前。
-    let buttonBitmapOn = parameters['buttonBitmapOnL'] || "OPon"; //ボタンONの名前。
-    let buttonBitmapOff = parameters['buttonBitmapOffL'] || "OPoff"; //ボタンOFFの名前
+    let buttonBitmapOn = parameters['buttonBitmapOn'] || "OPon"; //ボタンONの名前。
+    let buttonBitmapOff = parameters['buttonBitmapOff'] || "OPoff"; //ボタンOFFの名前
 
     let textOverhead = Number(parameters['textOverhead']) || 10; 
     let barOverhead = Number(parameters['barOverhead']) || 10; 
