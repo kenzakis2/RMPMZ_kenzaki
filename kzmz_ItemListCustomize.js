@@ -194,7 +194,7 @@
 
             _picList.forEach(function (line) {
                 var loadPicEntry = {};
-                loadPicEntry.bitmap = ImageManager.loadPicture(eval(line.expression));
+                loadPicEntry.bitmap = ImageManager.loadItemPics(eval(line.expression));
                 loadPicEntry.x = Number(line.x) + rect.x;
                 loadPicEntry.y = Number(line.y) + rect.y;
 
