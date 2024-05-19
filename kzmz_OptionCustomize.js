@@ -347,6 +347,7 @@
     Window_Options.prototype.setCategory = function (category) {
         if (category == this._category) return;
         this._category = category;
+        this.select(0);
         this.refresh();
     }
 

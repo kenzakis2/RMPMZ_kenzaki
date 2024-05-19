@@ -125,6 +125,7 @@
  * 
  * 
  * 更新履歴
+ * v1.01 - Spriteの構成タイミング変更し、コマンドの内容が違うキャラに対応
  * v1.00 - kzmz_PicMenuをベースに製造
  *
 */
@@ -267,10 +268,12 @@
     const kz_Window_ActorCommand_prototype_refresh = Window_ActorCommand.prototype.refresh
     Window_ActorCommand.prototype.refresh = function() {
         kz_Window_ActorCommand_prototype_refresh.call(this);
-        if (!this._commandSprites || this._commandSprites.length < 1)
+        console.log("ss");  
+        if (this._commandSprites && this._commandSprites.length > 0)
         {
-            this.makeCommandSprites();
+            this._commandSprites.forEach(e => this.removeChild(e), this);
         }
+        this.makeCommandSprites();
     };
     
 
@@ -292,7 +295,10 @@
     Window_ActorCommand.prototype.makeCommandSprites = function () {
         this._commandSprites = [];
         this._list.forEach(function (element, i) {
+            if (!element.enabled) return;
+            
             const symbolData = findwithSameSymbol(_symbolList, element);
+            console.log(this._list);
 
             if (!symbolData) {
                 console.log(element);
