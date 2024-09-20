@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc バトルコマンドの画像化（動き有） - v1.01
+ * @plugindesc バトルコマンドの画像化（動き有） - v1.02
  * @author 剣崎宗二
  * 
  * @target MZ
@@ -71,13 +71,20 @@
  * @min 0
  * @default 500
  * 
+ * @param display disabled item
+ * @desc 封印されたコマンドを表示するか？
+ * @type boolean
+ * @on YES
+ * @off NO
+ * @default false
+ *
  * @param display cursor
  * @desc カーソルを表示/消去
  * @type boolean
  * @on YES
  * @off NO
  * @default true
- *
+ * 
  * @param window background file
  * @desc メニューウィンドウの背景ファイル。空白でデフォルト仕様になります。
  * @type string
@@ -125,6 +132,7 @@
  * 
  * 
  * 更新履歴
+ * v1.02 - Window_ActorCommandのコマンドのenableがfalseの場合、コマンド自体を消去するのではなく半透明にする（パラメーターdisplay disabled itemで切り替え可）
  * v1.01 - Spriteの構成タイミング変更し、コマンドの内容が違うキャラに対応
  * v1.00 - kzmz_PicMenuをベースに製造
  *
@@ -236,6 +244,7 @@
     const _CwindowHeight = Number(parameters['commandwindow height'] || 500);
 
     const _cursorDisplay = eval(parameters['display cursor']);
+    const _sealedDisplay = eval(parameters['display disabled item']);
 
     const _windowBack = parameters['window background file'] || '';
 
@@ -268,7 +277,6 @@
     const kz_Window_ActorCommand_prototype_refresh = Window_ActorCommand.prototype.refresh
     Window_ActorCommand.prototype.refresh = function() {
         kz_Window_ActorCommand_prototype_refresh.call(this);
-        console.log("ss");  
         if (this._commandSprites && this._commandSprites.length > 0)
         {
             this._commandSprites.forEach(e => this.removeChild(e), this);
@@ -283,22 +291,12 @@
         this._cursorSprite.visible = false;
     };
 
-    // Window_ActorCommand.prototype.processTouch = function () {
-    //     if (this.isOpenAndActive()) {
-    //         console.log("Checking touch")
-    //         if (TouchInput.isCancelled()) {
-    //             this.onTouchCancel();
-    //         }
-    //     }
-    // };
-
     Window_ActorCommand.prototype.makeCommandSprites = function () {
         this._commandSprites = [];
         this._list.forEach(function (element, i) {
-            if (!element.enabled) return;
+            if (!element.enabled && !_sealedDisplay) return;
             
             const symbolData = findwithSameSymbol(_symbolList, element);
-            console.log(this._list);
 
             if (!symbolData) {
                 console.log(element);
@@ -310,7 +308,7 @@
             editedRect.x = editedRect.x + Number(itemData.endx);
             editedRect.y = editedRect.y + Number(itemData.endy);
 
-            let sprite = new Sprite_BattleActorCommand(itemData, editedRect, element.symbol, this, i);
+            let sprite = new Sprite_BattleActorCommand(itemData, editedRect, element.symbol, this, i, element.enabled);
             sprite.bitmap = ImageManager.loadSystem(symbolData ? symbolData.pic : "");
             this._commandSprites.push(sprite);
             this.addChild(sprite);
@@ -396,7 +394,7 @@
     Sprite_BattleActorCommand.prototype = Object.create(Sprite_Clickable.prototype);
     Sprite_BattleActorCommand.prototype.constructor = Sprite_BattleActorCommand;
 
-    Sprite_BattleActorCommand.prototype.initialize = function (cmdData, baseRect, symbol, parent, index) {
+    Sprite_BattleActorCommand.prototype.initialize = function (cmdData, baseRect, symbol, parent, index, enabled) {
         Sprite_Clickable.prototype.initialize.call(this);
         this._symbol = symbol;
         this._index = index;
@@ -406,6 +404,7 @@
         this.animeFrameCount = 0;
         this.expansionCount = 0;
 
+        this.maxOpacity = enabled ? 255 : 100;
         this.x = Number(this.cmdData.x) + this.baseRect.x + Number(this.baseRect.height / 2);
         this.y = Number(this.cmdData.y) + this.baseRect.y + Number(this.baseRect.height / 2);
         this.opacity = Number(this.cmdData.alpha);
@@ -465,7 +464,7 @@
         if (this.animeFrameCount >= Number(this.cmdData.endFrame)) {
             this.x = keyX;
             this.y = keyY;
-            this.opacity = 255;
+            this.opacity = this.maxOpacity;
             this.animeFrameCount = -1;
             return;
         }
@@ -474,7 +473,7 @@
             const frameLeft = Number(this.cmdData.endFrame) - this.animeFrameCount;
             this.x += Math.round((keyX - this.x) / frameLeft);
             this.y += Math.round((keyY - this.y) / frameLeft);
-            this.opacity += Math.round((255 - this.opacity) / frameLeft);
+            this.opacity += Math.round((this.maxOpacity - this.opacity) / frameLeft);
         }
 
         this.animeFrameCount++;
