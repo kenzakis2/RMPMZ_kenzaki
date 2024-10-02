@@ -101,7 +101,7 @@ function LinkActionManager() {
 
         targets.isSelf = b.some(e => LinkActionManager.isSameBattler(e, user));
         targets.isAlly = b.some(e => e.isActor() === user.isActor());
-        user.states().forEach(state => {
+        user.traitObjects().forEach(state => {
             if (state.meta && state.meta.linkaction && state.meta.linkcondition && !state.meta.link_crash)
             {
                 const condition = this.getConditionTagFromState(state);
