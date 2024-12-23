@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc バトルコマンドの画像化（動き有） - v1.02
+ * @plugindesc バトルコマンドの画像化（動き有） - v1.03
  * @author 剣崎宗二
  * 
  * @target MZ
@@ -34,6 +34,18 @@
  * @min 0
  * @decimals 2
  * @default 0.1
+ * 
+ * @param selected icon slide frame
+ * @desc 選択されたアイコンが右にスライドするまでに掛かるフレーム数
+ * @type number
+ * @min 0
+ * @default 0
+ * 
+ * @param selected icon slide pixels
+ * @desc 1フレーム辺り選択されたアイコンが右にスライドする量
+ * @type number
+ * @min -99999
+ * @default 0
  *
  * @param x overhead
  * @desc アイコンを並べる開始位置x
@@ -132,6 +144,7 @@
  * 
  * 
  * 更新履歴
+ * v1.03 - 選択肢したコマンドが横スライドする機能を追加（パラメーター「selected icon slide frame」「selected icon slide pixels」）
  * v1.02 - Window_ActorCommandのコマンドのenableがfalseの場合、コマンド自体を消去するのではなく半透明にする（パラメーターdisplay disabled itemで切り替え可）
  * v1.01 - Spriteの構成タイミング変更し、コマンドの内容が違うキャラに対応
  * v1.00 - kzmz_PicMenuをベースに製造
@@ -237,6 +250,9 @@
     const _MaxExpansion = Number(parameters['icon maxexpansion'] || 0.1);
     const _xOverhead = Number(parameters['x overhead'] || 0);
     const _yOverhead = Number(parameters['y overhead'] || 0);
+
+    const _selectedSlideFrame = eval(parameters['selected icon slide frame']);
+    const _selectedSlideX = eval(parameters['selected icon slide pixels']);
 
     const _CwindowX = Number(parameters['commandwindow x'] || 0);
     const _CwindowY = Number(parameters['commandwindow y'] || 0);
@@ -403,6 +419,7 @@
         this.cmdData = cmdData;
         this.animeFrameCount = 0;
         this.expansionCount = 0;
+        this.slideCount = 0;
 
         this.maxOpacity = enabled ? 255 : 100;
         this.x = Number(this.cmdData.x) + this.baseRect.x + Number(this.baseRect.height / 2);
@@ -438,10 +455,15 @@
 
         if (!this.isSelected) {
             this.expansionCount = 0;
+            this.slideCount = 0;
+            this.x = this.origX;
         }
+
         else {
             //選択されてる項目
             this.expansionCount++;
+            if (this.slideCount < _selectedSlideFrame) this.slideCount++;
+            this.x = this.origX + _selectedSlideX * this.slideCount;
         }
 
         const expScale = 1 + Math.sin((this.expansionCount % 60) / 60 * Math.PI) * _MaxExpansion;
@@ -457,6 +479,8 @@
 
         const keyX = this.baseRect.x + this.baseRect.width / 2;
         const keyY = this.baseRect.y + this.baseRect.height / 2;
+        this.origX = keyX;
+        this.origY = keyY;
 
         if (this.animeFrameCount < 0) return;
         this.visible = true;
