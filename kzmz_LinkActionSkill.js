@@ -27,16 +27,16 @@
  * 
  * また、デフォルトのデータにない以下の参照用データが実装されております。
  * ・b[0].cResult: b[0]への攻撃結果。命中したか、ダメージ量などが含まれております。（Game_ActionResult）
- * ・target.isSelf: スキルのターゲットがこのステートがついているキャラクターの場合
- * ・target.isAlly: スキルのターゲットがこのステートがついているキャラクターを含む仲間の場合
+ * ・targets.isSelf: スキルのターゲットがこのステートがついているキャラクターの場合
+ * ・targets.isAlly: スキルのターゲットがこのステートがついているキャラクターを含む仲間の場合
  * ・subject.isSelf: スキルの使用者がこのステートがついているキャラクターの場合
  * ・subject.isAlly: スキルの使用者がこのステートがついているキャラクターを含む仲間の場合
  * 
  * 例:
- * user.isDead() && !subject.isAlly && target.isAlly 
+ * user.isDead() && !subject.isAlly && targets.isAlly 
  * →敵から味方に攻撃が行われ、使用者が死亡している場合（何かしらの方法で死んだ際もステートを維持する必要はあります）
  * 
- * !subject.isAlly && target.isAlly && b[0].cResult.hpDamage > 0
+ * !subject.isAlly && targets.isAlly && b[0].cResult.hpDamage > 0
  * →敵から味方に攻撃が行われ、１以上のダメージが与えられた場合
  * 
  * user.isAlive() && subject.isSelf && action.item().id == 発動したいスキルID && b[0].cResult.hpDamage > 0
