@@ -146,10 +146,10 @@
     };
 
 
-    Spriteset_Base.prototype.refreshWorldState = function (worldState, worldStateTurns) {
+    Spriteset_Base.prototype.refreshWorldState = function (worldStateTurns) {
     }
 
-    Spriteset_Battle.prototype.refreshWorldState = function (worldState, worldStateTurns) {
+    Spriteset_Battle.prototype.refreshWorldState = function (worldStateTurns) {
         if (this._worldStateWindow) {
             this._battleField.removeChild(this._worldStateWindow);
         }
@@ -159,7 +159,7 @@
             result.iconIndex = $dataStates[id].iconIndex;
             result.name = $dataStates[id].name;
             result.description = $dataStates[id].message4;
-            result.turns = this.worldStateTurns[id];
+            result.turns = worldStateTurns[id];
             return result;
         });
 
@@ -206,7 +206,7 @@
             this.worldState.push(stateId);
         }
         this.worldStateTurns[stateId] = turns;
-        SceneManager._scene._spriteset.refreshWorldState();
+        SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
     }
 
     BattleManager.eraseWorldStates = function (stateId) {
@@ -215,7 +215,7 @@
             this.worldState.splice(index, 1);
         }
         delete this.worldStateTurns[stateId];
-        SceneManager._scene._spriteset.refreshWorldState();
+        SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
     }
 
     var kz_Game_Action_prototype_apply = Game_Action.prototype.apply;
@@ -245,8 +245,7 @@
                 this.eraseWorldStates(stateId);
             }
 
-            SceneManager._scene._spriteset.refreshWorldState();
-  
+            SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
 
         }, this)
     }
