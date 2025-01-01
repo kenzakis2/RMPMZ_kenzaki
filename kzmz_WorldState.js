@@ -227,7 +227,10 @@
         if (stateData.meta.worldStatePic) {
             this.worldStatePicSprites[stateId] = new Sprite();
             this.worldStatePicSprites[stateId].bitmap = ImageManager.loadWorldStatesPic(stateData.meta.worldStatePic);
-            SceneManager._scene._spriteset._battleField.addChild(this.worldStatePicSprites[stateId]);
+            this.worldStatePicSprites[stateId].x = Number(stateData.meta.worldStatePicX) || 0;
+            this.worldStatePicSprites[stateId].y = Number(stateData.meta.worldStatePicY) || 0;
+            this.worldStatePicSprites[stateId].blendMode = Number(stateData.meta.worldStatePicBlend) || 1;
+            SceneManager._scene._spriteset._back2Sprite.addChild(this.worldStatePicSprites[stateId]);
         }
 
         SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
