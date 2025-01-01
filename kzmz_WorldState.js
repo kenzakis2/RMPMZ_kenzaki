@@ -1,107 +1,132 @@
 /*:ja
  * @plugindesc フィールド魔法スキル作成
  * @author 剣崎宗二
- * 
- * @param Window X
- * @desc 戦闘中のワールドステート窓のX座標です。
- * @default 30
- * 
- * @param Window Y
- * @desc 戦闘中のワールドステート窓のY座標です。
- * @default 20
- * 
- * @param Window Width
- * @desc 戦闘中のワールドステート窓の横幅です。
- * @default 600
- * 
- * @param Window Height
- * @desc 戦闘中のワールドステート窓の縦幅です。
- * @default 500
- * 
- * @param Left Overhead
- * @desc ワールドステート名のウィンドウ左端からの距離です。
- * @default 40
- * 
- * @param Top Overhead
- * @desc ワールドステートテキストの、行の上からの距離です。
+ *
+ * @target MZ
+ *
+ * @param baseY
+ * @desc ステート名の窓上からの距離
+ * @type number
  * @default 10
  * 
- * @param Name Width
- * @desc ワールドステート名の横幅です。説明文の表示位置にも影響します。
+ * @param WindowWidth
+ * @desc ステート表示窓横幅
+ * @type number
+ * @default 600
+ * 
+ * @param WindowHeight
+ * @desc ステート表示窓横幅
+ * @type number
+ * @default 500
+ * 
+ * @param NameOverheadX
+ * @desc 名前の左からの距離
+ * @type number
+ * @default 40
+ * 
+ * @param DescOverheadX
+ * @desc 解説の左からの距離
+ * @type number
+ * @default 120
+ * 
+ * @param LineDistance
+ * @desc 行同士の距離
+ * @type number
+ * @default 40
+ * 
+ * @param NameFontSize
+ * @desc 名前フォントサイズ
+ * @type number
+ * @default 20
+ * 
+ * @param DescFontSize
+ * @desc 解説フォントサイズ
+ * @type number
+ * @default 20
+ * 
+ * @param WindowX
+ * @desc ステート窓X
+ * @type number
  * @default 100
  * 
- * @param Line Height
- * @desc ワールドステート1行の高さです
- * @default 20
- * 
- * @param Line Overhead
- * @desc ワールドステートの行間距離です。
- * @default 20
- * 
- * @help このプラグインにはプラグインコマンドはありません。
+ * @param WindowY
+ * @desc ステート窓Y
+ * @type number
+ * @default 100
  *
- * スキルの「メモ」欄に
- * 
- * <addWorldStates:[ステートID],[持続ターン]>
- * で該当のステートがワールドステートとして場に付与されます。
- * このステート自体のメモ欄に何もなければ、このステート自体がそのまま全キャラクターにそのまま付与されますが、
- * <allystate:3>
- * <enemystate:5>
- * と言ったように味方と敵に別々ののステートを付与するタグをステート自体に追加する事が可能です。
- * 
- * <removeWorldStates:[消すステートのID]>
- * で該当のステートを消去します。
- * 尚これは上記の追加と併用可能であり、1スキルで既存のステートを消し、新しいステートを付与する事で
- * 擬似的な上書きとなります。
- * 
- * 尚、これらのタグは何れも複数可です。同時に付与されたり、同時に消されたりします。
- * 
- * ワールドステートの説明文には、該当のステートの「この状態が解除された時」のテキストが使用されます。
- * 尚、注意点として、スキルのターゲットは必ず設定してください。でないとステートは付与されません。
+ *@help
+ *必須----スキルの「メモ」欄に
+ *<addWorldStates:[ステートID],[持続ターン]>
+ *戦闘中ずっとかかっていて欲しいスキルはターンを-1
  *
+ *ワールドステート用のステートメモ欄に
+ *
+ *<allystate:[味方に付与するステートID]>
+ *<enemystate:[敵に付与するステートID]>
+ *
+ *この2つを追記すると、敵味方にそれぞれ違う効果を付与できる
+ *入れなかった場合はワールドに付与されたステートがそのまま敵味方に両方コピーされる
+ *（どちらか一方にかけたい場合はダミーステート入れると吉。）
+ *
+ * 打ち消すスキル
+ *<removeWorldStates:[消すヤツのID]>
+ *
+ *<removeWorldStates:3>
+ *<removeWorldStates:4>
+ *<removeWorldStates:5>
+ *などの用に連装可。擬似的に「上書き」を行うことは出来る
+ *例：add4 　remove 5,6,7（ワールドステート4を付与し5.6.7を解除）
+ *
+ *<worldStatePic:abc> abc.pngをpicture内wstフォルダよりロードし、ワールドステート維持中表示する
  */
 
 (function () {
-    var parameters = PluginManager.parameters('kz_WorldState');
-    //------各表示用パラメーター-------
-    var windowX = Number(parameters['Window X'] || 30);
-    var windowY = Number(parameters['Window Y'] || 20);
-    var windowWidth = Number(parameters['Window Width'] || 600);
-    var windowHeight = Number(parameters['Window Height'] || 500);
 
-    var NameOverheadX = Number(parameters['Left Overhead'] || 40); //名称の左からの距離
-    var NameWidth = Number(parameters['Name Width'] || 40)
-    var DescOverheadX = NameWidth + 20;  //説明の左からの距離
-    var TurnOverheadX = DescOverheadX + 200;  //説明の左からの距離
-    var yOverhead = Number(parameters['Top Overhead'] || 10)
+    const script = "kzmz_WorldState";
+    const parameters = PluginManager.parameters(script);
 
-    var LineHeight = Number(parameters['Line Height'] || 20)
-    var vd = LineHeight + Number(parameters['Line Overhead'] || 20); //次の行との距離
+    const baseY = Number(parameters['baseY']);
 
-    var fontSizeName = 20; //名前部分フォントサイズ
-    var fontSizeDesc = 20; //解説部分フォントサイズ
+    const windowWidth = Number(parameters['WindowWidth']);
+    const windowHeight = Number(parameters['WindowHeight']);
 
-    //------各表示用パラメーター-------
+    const NameOverheadX = Number(parameters['NameOverheadX']);
+    const DescOverheadX = Number(parameters['DescOverheadX']);
+    const TurnOverheadX = DescOverheadX + 200;  
+
+    const vd = Number(parameters['LineDistance']);
+
+    const fontSizeName = Number(parameters['NameFontSize']);
+    const fontSizeDesc = Number(parameters['DescFontSize']);
+
+    const windowX = Number(parameters['WindowX']);
+    const windowY = Number(parameters['WindowY']);
 
     //---------------[初期化]------------------------
 
-    var kz_BattleManager_initMembers = BattleManager.initMembers;
+    const kz_BattleManager_initMembers = BattleManager.initMembers;
     BattleManager.initMembers = function () {
         this.worldState = [];
         this.worldStateTurns = [];
+        this.worldStatePicSprites = [];
         kz_BattleManager_initMembers.call(this);
     }
 
-    var kz_BattleManager_endBattle = BattleManager.endBattle;
+    const kz_BattleManager_endBattle = BattleManager.endBattle;
     BattleManager.endBattle = function (result) {
         kz_BattleManager_endBattle.call(this, result);
         this.worldState = [];
         this.worldStateTurns = [];
+        this.worldStatePicSprites = [];
+    };
+
+    ImageManager.loadWorldStatesPic = function (filename) {
+        return this.loadBitmap("img/pictures/wst/", filename);
     };
 
     //-------------------------------[判定表示系]-------------------------------
 
-    var kz_Game_BattlerBase_prototype_isStateAffected = Game_BattlerBase.prototype.isStateAffected;
+    const kz_Game_BattlerBase_prototype_isStateAffected = Game_BattlerBase.prototype.isStateAffected;
     Game_BattlerBase.prototype.isStateAffected = function (stateId) {
         if (BattleManager.worldState && BattleManager.worldState.length > 0) {
             return this._states.concat(BattleManager.worldState).contains(stateId);
@@ -111,12 +136,12 @@
         }
     };
 
-    var kz_Game_BattlerBase_prototype_states = Game_BattlerBase.prototype.states;
+    const kz_Game_BattlerBase_prototype_states = Game_BattlerBase.prototype.states;
     Game_BattlerBase.prototype.states = function () {
         if (BattleManager.worldState && BattleManager.worldState.length > 0) {
-            var worldStateMap = BattleManager.worldState.map(function (id) {
-                var target = $dataStates[id];
-                var extraState = [];
+            const worldStateMap = BattleManager.worldState.flatMap(function (id) {
+                const target = $dataStates[id];
+                let extraState = [];
                 if (this.isActor() && target.metaArray.allystate) {
                     target.metaArray.allystate.forEach(function (element) {
                         extraState.push($dataStates[Number(element)]);
@@ -134,12 +159,8 @@
 
                 return [$dataStates[id]];
             }, this);
-
-            var result = kz_Game_BattlerBase_prototype_states.call(this);
-            for (var i = 0; i < worldStateMap.length; i++) {
-                result = result.concat(worldStateMap[i]);
-            }
-
+            
+            let result = kz_Game_BattlerBase_prototype_states.call(this).concat(worldStateMap);
             return result;
         }
         return kz_Game_BattlerBase_prototype_states.call(this);
@@ -150,55 +171,50 @@
     }
 
     Spriteset_Battle.prototype.refreshWorldState = function (worldStateTurns) {
-        if (this._worldStateWindow) {
-            this._battleField.removeChild(this._worldStateWindow);
-        }
-
-        var worldStateDisplay = BattleManager.worldState.map(function (id) {
-            var result = {};
+        const worldStateDisplay = BattleManager.worldState.map(function (id) {
+            let result = {};
             result.iconIndex = $dataStates[id].iconIndex;
             result.name = $dataStates[id].name;
             result.description = $dataStates[id].message4;
             result.turns = worldStateTurns[id];
             return result;
         });
+        //------各表示用パラメーター-------
 
-        this._worldStateWindow = new Sprite();
-        this._worldStateWindow.bitmap = new Bitmap(windowWidth, windowHeight);
+        if (!this._worldStateWindow) {
+            this._worldStateWindow = new Sprite();
+            this._worldStateWindow.bitmap = new Bitmap(windowWidth, windowHeight);
+            this._battleField.addChild(this._worldStateWindow);
+            this._worldStateWindow.x = windowX;
+            this._worldStateWindow.y = windowY;
+        }
+        else {
+            this._worldStateWindow.bitmap.clear();
+        }
 
-        var y = yOverhead;
         var originalFontSize = this._worldStateWindow.bitmap.fontSize;
         worldStateDisplay.forEach(function (result) {
-            var iconIndex = result.iconIndex;
+            let y = baseY;
+            let iconIndex = result.iconIndex;
 
             this._worldStateWindow.bitmap.fontSize = fontSizeName;
-            this._worldStateWindow.bitmap.drawText(result.name, NameOverheadX, y + 10, NameWidth, LineHeight, 'left'); //ステート名
+            this._worldStateWindow.bitmap.drawText(result.name, NameOverheadX, y + 10, 80, 20, 'left'); //ステート名
 
             this._worldStateWindow.bitmap.fontSize = fontSizeDesc;
-            this._worldStateWindow.bitmap.drawText(result.description, DescOverheadX, y + 10, 200, LineHeight, 'left'); //ステート説明
-            this._worldStateWindow.bitmap.drawText(result.turns + "T", TurnOverheadX, y + 10, 50, LineHeight, 'right'); //ターン数
+            this._worldStateWindow.bitmap.drawText(result.description, DescOverheadX, y + 10, 200, 20, 'left'); //ステート説明
+            this._worldStateWindow.bitmap.drawText(result.turns + "T", TurnOverheadX, y + 10, 50, 20, 'right'); //ターン数
 
-            var sprite = new Sprite();
-            sprite.bitmap = ImageManager.loadSystem('IconSet');
+            const bitmapSource = ImageManager.loadSystem('IconSet');
 
             var pw = 32;
             var ph = 32;
             var sx = iconIndex % 16 * pw;
             var sy = Math.floor(iconIndex / 16) * ph;
 
-            sprite.setFrame(sx, sy, pw, ph);
-            sprite.y = y;
+            this._worldStateWindow.bitmap.blt(bitmapSource, sx, sy, pw, ph, 0, y, pw, ph)
             y += vd;
-
-            this._worldStateWindow.addChild(sprite);
-
-
         }, this);
         this._worldStateWindow.bitmap.fontSize = originalFontSize;
-
-        this._worldStateWindow.x = windowX;
-        this._worldStateWindow.y = windowY;
-        this._battleField.addChild(this._worldStateWindow)
     }
     //-------------------------------付加排除系----------------------------------
     BattleManager.addWorldStates = function (stateId, turns) {
@@ -206,6 +222,14 @@
             this.worldState.push(stateId);
         }
         this.worldStateTurns[stateId] = turns;
+
+        const stateData = $dataStates[stateId];
+        if (stateData.meta.worldStatePic) {
+            this.worldStatePicSprites[stateId] = new Sprite();
+            this.worldStatePicSprites[stateId].bitmap = ImageManager.loadWorldStatesPic(stateData.meta.worldStatePic);
+            SceneManager._scene._spriteset._battleField.addChild(this.worldStatePicSprites[stateId]);
+        }
+
         SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
     }
 
@@ -215,6 +239,12 @@
             this.worldState.splice(index, 1);
         }
         delete this.worldStateTurns[stateId];
+
+        if (this.worldStatePicSprites[stateId]) {
+            SceneManager._scene._spriteset._battleField.removeChild(this.worldStatePicSprites[stateId]);
+            this.worldStatePicSprites[stateId] = null;
+        }
+
         SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
     }
 
@@ -244,15 +274,16 @@
             if (this.worldStateTurns[stateId] == 0) {
                 this.eraseWorldStates(stateId);
             }
-
-            SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
+            else {
+                SceneManager._scene._spriteset.refreshWorldState(this.worldStateTurns);
+            }
 
         }, this)
     }
 
-    var kz_BattleManager_endTurn = BattleManager.endTurn;
-    BattleManager.endTurn = function () {
-        kz_BattleManager_endTurn.call(this);
+    var kz_BattleManager_updateTurnEnd = BattleManager.updateTurnEnd;
+    BattleManager.updateTurnEnd = function () {
+        kz_BattleManager_updateTurnEnd.call(this);
         this.endTurnWorldStatesProcess();
     }
 
