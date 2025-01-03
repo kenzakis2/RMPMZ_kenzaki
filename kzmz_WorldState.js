@@ -29,6 +29,11 @@
  * @type number
  * @default 120
  * 
+ * @param TurnOverheadX
+ * @desc ターン数の左からの距離
+ * @type number
+ * @default 120
+ * 
  * @param LineDistance
  * @desc 行同士の距離
  * @type number
@@ -92,7 +97,7 @@
 
     const NameOverheadX = Number(parameters['NameOverheadX']);
     const DescOverheadX = Number(parameters['DescOverheadX']);
-    const TurnOverheadX = DescOverheadX + 200;  
+    const TurnOverheadX = Number(parameters['TurnOverheadX']);
 
     const vd = Number(parameters['LineDistance']);
 
