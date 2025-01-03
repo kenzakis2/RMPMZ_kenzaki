@@ -15,7 +15,7 @@
  * @default 600
  * 
  * @param WindowHeight
- * @desc ステート表示窓横幅
+ * @desc ステート表示窓縦幅
  * @type number
  * @default 500
  * 
@@ -193,16 +193,17 @@
         }
 
         var originalFontSize = this._worldStateWindow.bitmap.fontSize;
-        worldStateDisplay.forEach(function (result) {
-            let y = baseY;
+        let y = baseY;
+
+        worldStateDisplay.forEach(function (result) {    
             let iconIndex = result.iconIndex;
 
             this._worldStateWindow.bitmap.fontSize = fontSizeName;
-            this._worldStateWindow.bitmap.drawText(result.name, NameOverheadX, y + 10, 80, 20, 'left'); //ステート名
+            this._worldStateWindow.bitmap.drawText(result.name, NameOverheadX, y, DescOverheadX - NameOverheadX - 5, vd, 'left'); //ステート名
 
             this._worldStateWindow.bitmap.fontSize = fontSizeDesc;
-            this._worldStateWindow.bitmap.drawText(result.description, DescOverheadX, y + 10, 200, 20, 'left'); //ステート説明
-            this._worldStateWindow.bitmap.drawText(result.turns + "T", TurnOverheadX, y + 10, 50, 20, 'right'); //ターン数
+            this._worldStateWindow.bitmap.drawText(result.description, TurnOverheadX - DescOverheadX - 5, y, 200, vd, 'left'); //ステート説明
+            this._worldStateWindow.bitmap.drawText(result.turns + "T", TurnOverheadX, y, 50, vd, 'left'); //ターン数
 
             const bitmapSource = ImageManager.loadSystem('IconSet');
 
