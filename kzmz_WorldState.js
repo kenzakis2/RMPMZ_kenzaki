@@ -250,7 +250,7 @@
         delete this.worldStateTurns[stateId];
 
         if (this.worldStatePicSprites[stateId]) {
-            SceneManager._scene._spriteset._battleField.removeChild(this.worldStatePicSprites[stateId]);
+            SceneManager._scene._spriteset._back2Sprite.removeChild(this.worldStatePicSprites[stateId]);
             this.worldStatePicSprites[stateId] = null;
         }
 
