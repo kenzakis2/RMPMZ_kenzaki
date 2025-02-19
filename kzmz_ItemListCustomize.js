@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc アイテムメニューの自由設置
+ * @plugindesc アイテムメニューの自由設置-v1.0.1
  * @author 剣崎宗二
  *
  * @target MZ
@@ -35,6 +35,10 @@
  * @desc 各枠のテキストの詳細
  * @type struct<PicItem>[]
  * @default []
+ * 
+ * @help:
+ * 更新履歴：
+ * v1.0.1-特定の状況で背景設定でエラーが発生する状況の修正
  */
 /*~struct~TextItem:
  * @param expression
@@ -119,6 +123,10 @@
 
     Scene_Item.prototype.createItemWindow = function () {
         const rect = this.itemWindowRect();
+        if (!this._categoryWindow.needsSelection()) {
+            rect.y -= this._categoryWindow.height;
+            rect.height += this._categoryWindow.height;
+        }
         this._itemWindow = new Window_CustomItemList(rect);
         this._itemWindow.setHelpWindow(this._helpWindow);
         this._itemWindow.setHandler("ok", this.onItemOk.bind(this));
@@ -126,8 +134,6 @@
         this.addWindow(this._itemWindow);
         this._categoryWindow.setItemWindow(this._itemWindow);
         if (!this._categoryWindow.needsSelection()) {
-            this._itemWindow.y -= this._categoryWindow.height;
-            this._itemWindow.height += this._categoryWindow.height;
             this._itemWindow.createContents();
             this._categoryWindow.update();
             this._categoryWindow.hide();
