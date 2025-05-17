@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc メニューコマンドの画像化（動き有） - v1.01
+ * @plugindesc メニューコマンドの画像化（動き有） - v1.02
  * @author 剣崎宗二
  * 
  * @target MZ
@@ -130,6 +130,7 @@
  * 
  * 更新履歴
  * v1.01 - Experimentalをベースに作り直し
+ * v1.02 - 選択されたコマンドの画像が変わる機能を追加（Symbol Chart内pic_selected）
  *
 */
 /*~struct~SymbolChart:
@@ -139,6 +140,10 @@
  * 
  * @param pic
  * @desc ピクチャ名
+ * @type string
+ * 
+ * @param pic_selected
+ * @desc コマンドが選ばれた際に切り替わるピクチャ名（空白の場合はpicと同一とみなされます）
  * @type string
  * 
 */
@@ -290,7 +295,7 @@
             editedRect.x = editedRect.x + Number(itemData.endx);
             editedRect.y = editedRect.y + Number(itemData.endy);
 
-            let sprite = new Sprite_MenuCommand(itemData, editedRect, element.symbol, this, i);
+            let sprite = new Sprite_MenuCommand(itemData, editedRect, element.symbol, this, i, symbolData);
             sprite.bitmap = ImageManager.loadSystem(symbolData ? symbolData.pic : "");
             this._commandSprites.push(sprite);
             this.addChild(sprite);
@@ -376,8 +381,9 @@
     Sprite_MenuCommand.prototype = Object.create(Sprite_Clickable.prototype);
     Sprite_MenuCommand.prototype.constructor = Sprite_MenuCommand;
 
-    Sprite_MenuCommand.prototype.initialize = function (cmdData, baseRect, symbol, parent, index) {
+    Sprite_MenuCommand.prototype.initialize = function (cmdData, baseRect, symbol, parent, index, symbolData) {
         Sprite_Clickable.prototype.initialize.call(this);
+        this._symbolData = symbolData;
         this._symbol = symbol;
         this._index = index;
         this._parentWindow = parent;
@@ -385,6 +391,7 @@
         this.cmdData = cmdData;
         this.animeFrameCount = 0;
         this.expansionCount = 0;
+        this.currentPic = symbol.pic;
 
         this.x = Number(this.cmdData.x) + this.baseRect.x + Number(this.baseRect.height / 2);
         this.y = Number(this.cmdData.y) + this.baseRect.y + Number(this.baseRect.height / 2);
@@ -415,14 +422,25 @@
     }
 
     Sprite_MenuCommand.prototype.updateSelected = function () {
-        if (!this.parent.isControlAllowed()) return;  //移動中は拡縮なし
+        if (!this.parent.isControlAllowed() || !this._symbolData) return;  //移動中は拡縮なし、シンボルデータがない場合画像変更の必要なし（空白画像）
+
+        const symbol = this._symbolData;
+        let picTarget = ""
 
         if (!this.isSelected) {
             this.expansionCount = 0;
+            picTarget = symbol.pic;
         }
         else {
             //選択されてる項目
             this.expansionCount++;
+            picTarget = symbol.pic_selected ? symbol.pic_selected : symbol.pic;
+        }
+
+        if (picTarget != this.currentPic)
+        {
+            this.currentPic = picTarget;
+            this.bitmap = ImageManager.loadSystem(picTarget);
         }
 
         const expScale = 1 + Math.sin((this.expansionCount % 60) / 60 * Math.PI) * _MaxExpansion;
