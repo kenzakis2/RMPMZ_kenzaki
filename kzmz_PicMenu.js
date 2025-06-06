@@ -1,5 +1,5 @@
 /*:ja
- * @plugindesc メニューコマンドの画像化（動き有） - v1.02
+ * @plugindesc メニューコマンドの画像化（動き有） - v1.03
  * @author 剣崎宗二
  * 
  * @target MZ
@@ -131,6 +131,7 @@
  * 更新履歴
  * v1.01 - Experimentalをベースに作り直し
  * v1.02 - 選択されたコマンドの画像が変わる機能を追加（Symbol Chart内pic_selected）
+ * v1.03 - コマンド記憶が効かない問題を修正
  *
 */
 /*~struct~SymbolChart:
@@ -249,7 +250,7 @@
             this.createBackSprite();
         }
         this.makeCommandSprites();
-        this.select(0);
+        this.select(this.index());
     };
 
     Window_MenuCommand.prototype.createBackSprite = function () {
@@ -280,8 +281,6 @@
 
     Window_MenuCommand.prototype.makeCommandSprites = function () {
         this._commandSprites = [];
-        this.clearCommandList();
-        this.makeCommandList();
         this._list.forEach(function (element, i) {
             const symbolData = findwithSameSymbol(_symbolList, element);
 
