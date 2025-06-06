@@ -233,28 +233,28 @@
     let buttonBitmapOn = parameters['buttonBitmapOn'] || "OPon"; //ボタンONの名前。
     let buttonBitmapOff = parameters['buttonBitmapOff'] || "OPoff"; //ボタンOFFの名前
 
-    let textOverhead = Number(parameters['textOverhead']) || 10; 
-    let barOverhead = Number(parameters['barOverhead']) || 10; 
-    let statusTextWidth = Number(parameters['statusTextWidth']) || 50; 
-    let titleTextWidth = Number(parameters['titleTextWidth']) || 50; 
+    let textOverhead = Number(parameters['textOverhead']) || 10;
+    let barOverhead = Number(parameters['barOverhead']) || 10;
+    let statusTextWidth = Number(parameters['statusTextWidth']) || 50;
+    let titleTextWidth = Number(parameters['titleTextWidth']) || 50;
 
-    let _wX = Number(parameters['WindowX']) || 0; 
-    let _wY = Number(parameters['WindowY']) || 0; 
-    let _wW = Number(parameters['WindowWidth']) || 0; 
-    let _wH = Number(parameters['WindowHeight']) || 0; 
-    let _wOX = Number(parameters['WindowXoverhead']) || 0; 
-    let _wOY = Number(parameters['WindowYoverhead']) || 0; 
-    let _rOX = Number(parameters['rectXoverhead']) || 0; 
-    let _rOY = Number(parameters['rectYoverhead']) || 0; 
-    let _heightperRow = Number(parameters['HeightPerRow']) || 0; 
-    let _OWBack = String(parameters['WindowBack']) || ""; 
-    let _SBack = String(parameters['SceneBack']) || ""; 
+    let _wX = Number(parameters['WindowX']) || 0;
+    let _wY = Number(parameters['WindowY']) || 0;
+    let _wW = Number(parameters['WindowWidth']) || 0;
+    let _wH = Number(parameters['WindowHeight']) || 0;
+    let _wOX = Number(parameters['WindowXoverhead']) || 0;
+    let _wOY = Number(parameters['WindowYoverhead']) || 0;
+    let _rOX = Number(parameters['rectXoverhead']) || 0;
+    let _rOY = Number(parameters['rectYoverhead']) || 0;
+    let _heightperRow = Number(parameters['HeightPerRow']) || 0;
+    let _OWBack = String(parameters['WindowBack']) || "";
+    let _SBack = String(parameters['SceneBack']) || "";
 
-    let _CwX = Number(parameters['CWindowX']) || 0; 
-    let _CwY = Number(parameters['CWindowY']) || 0; 
-    let _CwW = Number(parameters['CWindowWidth']) || 0; 
-    let _CwH = Number(parameters['CWindowHeight']) || 0; 
-    let _CwCol = Number(parameters['CWindowCols']) || 1; 
+    let _CwX = Number(parameters['CWindowX']) || 0;
+    let _CwY = Number(parameters['CWindowY']) || 0;
+    let _CwW = Number(parameters['CWindowWidth']) || 0;
+    let _CwH = Number(parameters['CWindowHeight']) || 0;
+    let _CwCol = Number(parameters['CWindowCols']) || 1;
 
     let optionList = JSON.parse(parameters['Options']).map(
         function (e) {
@@ -283,22 +283,29 @@
     };
 
     const kz_Scene_Options_prototype_create = Scene_Options.prototype.create;
-    Scene_Options.prototype.create = function() {
+    Scene_Options.prototype.create = function () {
         kz_Scene_Options_prototype_create.call(this);
         this.createCategoryWindow();
-        this._optionCategoryWindow.activate();
-        this._optionsWindow.deactivate();
+        if (_categoryData.length < 2) { 
+            this._optionCategoryWindow.deactivate();
+            this._optionCategoryWindow.select(0);
+            this._optionsWindow.activate();
+        }
+        else {
+            this._optionCategoryWindow.activate();
+            this._optionsWindow.deactivate();
+        }
     };
 
     const Scene_Options_prototype_createOptionsWindow = Scene_Options.prototype.createOptionsWindow;
-    Scene_Options.prototype.createOptionsWindow = function() {
+    Scene_Options.prototype.createOptionsWindow = function () {
         const rect = new Rectangle(_wX, _wY, _wW, _wH);
         this._optionsWindow = new Window_Options(rect);
         this._optionsWindow.setHandler("cancel", this.optionCancel.bind(this));
         this.addWindow(this._optionsWindow);
     };
 
-    Scene_Options.prototype.createCategoryWindow = function() {
+    Scene_Options.prototype.createCategoryWindow = function () {
         const rect = new Rectangle(_CwX, _CwY, _CwW, _CwH);
         this._optionCategoryWindow = new Window_OptionCategory(rect);
         this._optionCategoryWindow.setHandler("ok", this.categoryOk.bind(this));
@@ -307,16 +314,21 @@
         this.addWindow(this._optionCategoryWindow);
     };
 
-    Scene_Options.prototype.categoryOk = function() {
+    Scene_Options.prototype.categoryOk = function () {
         this._optionsWindow.activate();
     };
 
-    Scene_Options.prototype.optionCancel = function() {
-        this._optionCategoryWindow.activate();
+    Scene_Options.prototype.optionCancel = function () {
+        if (_categoryData.length < 2) {
+            this.popScene();
+        }
+        else {
+            this._optionCategoryWindow.activate();
+        }
     };
 
     const kz_Scene_Options_prototype_createBackground = Scene_Options.prototype.createBackground;
-    Scene_Options.prototype.createBackground = function() {
+    Scene_Options.prototype.createBackground = function () {
         kz_Scene_Options_prototype_createBackground.call(this);
         this._backgroundSprite2 = new Sprite();
         this._backgroundSprite2.bitmap = ImageManager.loadSystem(_SBack);
@@ -351,7 +363,7 @@
         this.refresh();
     }
 
-    Window_Options.prototype.makeCommandList = function() {
+    Window_Options.prototype.makeCommandList = function () {
         optionList.forEach(e => {
             if (!e || e.optionCategory != this._category || !eval(e.condition)) return;
             this.addCommand(e.name, e.data);
@@ -378,14 +390,13 @@
         return tResult;
     };
 
-    Window_Options.prototype.itemHeight = function() {
+    Window_Options.prototype.itemHeight = function () {
         return _heightperRow;
     };
 
     Window_Options.prototype.setConfigValue = function (symbol, volume) {
         let targetValue = volume;
-        if (this.isBarSymbol(symbol))
-        {
+        if (this.isBarSymbol(symbol)) {
             let t = this.findSymbolFromList(symbol);
             targetValue = Number(targetValue).clamp(t.typeMin, t.typeMax);
         }
@@ -393,7 +404,7 @@
     };
 
     const kz_Window_Options_prototype_changeValue = Window_Options.prototype.changeValue;
-    Window_Options.prototype.changeValue = function(symbol, value) {
+    Window_Options.prototype.changeValue = function (symbol, value) {
         if (this.isScriptSymbol(symbol)) return;
         kz_Window_Options_prototype_changeValue.call(this, symbol, value)
     };
@@ -431,8 +442,7 @@
         let baseX = graphicRect.x + _rOX;
         let baseY = graphicRect.y + _rOY
 
-        if (this._baseSprites.some(e => e._symbol == symbol))
-        {
+        if (this._baseSprites.some(e => e._symbol == symbol)) {
             //change Value only
             let spriteBar = this._baseSprites.find(e => e._symbol == symbol);
             let existingDial = this._cursorSprites.find(e => e._symbol == symbol);
@@ -444,8 +454,7 @@
             existingText.bitmap.drawText(this.getConfigValue(symbol), 0, 0, 50, 80, 'left');
 
         }
-        else
-        {
+        else {
             let spriteBar = new Sprite_Options(barBitmapObject, symbol);
             spriteBar.x = baseX;
             spriteBar.y = baseY;
@@ -458,7 +467,7 @@
             this._cursorSprites.push(spriteDial);
             this.addChild(spriteDial);
 
-            let spriteText = new Sprite_Options(new Bitmap(50,50), symbol);
+            let spriteText = new Sprite_Options(new Bitmap(50, 50), symbol);
             spriteText.x = graphicRect.x + graphicRect.width - 50;
             spriteText.y = graphicRect.y;
             spriteText.bitmap.drawText(this.getConfigValue(symbol), 0, 0, 50, 80, 'left');
@@ -475,13 +484,11 @@
 
         let targetBitmap = value ? ConfigManager.buttonBitmapOnL : ConfigManager.buttonBitmapOffL;
 
-        if (targetSprite)
-        {
+        if (targetSprite) {
             //change Value only
             targetSprite.bitmap = targetBitmap;
         }
-        else
-        {
+        else {
             var newTargetSprite = new Sprite_Options(targetBitmap, symbol)
             newTargetSprite.x = graphicRect.x;
             newTargetSprite.y = graphicRect.y;
@@ -496,7 +503,7 @@
         this.resetTextColor();
         this.changePaintOpacity(this.isCommandEnabled(index));
         this.drawTextEx(this.commandName(index).replace("\\n", "\n"), rect.x, rect.y, titleWidth);
-        
+
 
         let symbol = this.commandSymbol(index);
         let newRect = JsonEx.makeDeepCopy(rect);
@@ -507,12 +514,12 @@
             newRect.width -= barOverhead;
             this.drawDragBar(index, newRect);
         }
-        else if (!this.isScriptSymbol(symbol)){
+        else if (!this.isScriptSymbol(symbol)) {
             this.drawOnOffButton(index, newRect);
         }
     };
 
-    Window_Options.prototype.processControlCharacter = function(textState, c) {
+    Window_Options.prototype.processControlCharacter = function (textState, c) {
         if (c === "\n") {
             this.processNewLine(textState);
         }
@@ -521,13 +528,13 @@
             this.processEscapeCharacter(code, textState);
         }
     };
-    
-    Window_Options.prototype.processNewLine = function(textState) {
+
+    Window_Options.prototype.processNewLine = function (textState) {
         textState.x = textState.startX;
         textState.y += textState.height;
         textState.height = this.calcTextHeight(textState);
     };
-    
+
 
     Window_Options.prototype.isBarSymbol = function (symbol) {
         let targetOption = this.findSymbolFromList(symbol);
@@ -553,8 +560,8 @@
         if (hitIndex >= 0) {
             let symbol = this.commandSymbol(hitIndex);
             if (this.isVolumeSymbol(symbol)) {
-                let v = this.xToValue(symbol,localPos.x);
-                this.changeValue(symbol,v);
+                let v = this.xToValue(symbol, localPos.x);
+                this.changeValue(symbol, v);
             }
             else if (hitIndex === this.index()) {
                 if (TouchInput.isTriggered()) {
@@ -580,22 +587,20 @@
     };
 
     const kz_Window_Options_prototype_processOk = Window_Options.prototype.processOk;
-    Window_Options.prototype.processOk = function() {
+    Window_Options.prototype.processOk = function () {
         const index = this.index();
         const symbol = this.commandSymbol(index);
 
-        if (this.isScriptSymbol(symbol))
-        {
+        if (this.isScriptSymbol(symbol)) {
             console.log("executing script type: " + symbol)
             eval(symbol);
         }
-        else
-        {
+        else {
             kz_Window_Options_prototype_processOk.call(this);
         }
     };
 
-    Window_Options.prototype.onTouchCancel = function() {
+    Window_Options.prototype.onTouchCancel = function () {
         this.processCancel();
     };
 
@@ -609,61 +614,61 @@
         return value;
     };
 
-    Window_Options.prototype.drawBackgroundRect = function(rect) {   
+    Window_Options.prototype.drawBackgroundRect = function (rect) {
     };
 
     function Window_OptionCategory() {
         this.initialize(...arguments);
     }
-    
+
     Window_OptionCategory.prototype = Object.create(Window_Command.prototype);
     Window_OptionCategory.prototype.constructor = Window_OptionCategory;
-    
-    Window_OptionCategory.prototype.initialize = function(rect) {
+
+    Window_OptionCategory.prototype.initialize = function (rect) {
         Window_Command.prototype.initialize.call(this, rect);
         this._itemWindow = null;
         if (_OWBack != '') {
             this.setBackgroundType(2);
         }
     };
-    
-    Window_OptionCategory.prototype.maxCols = function() {
+
+    Window_OptionCategory.prototype.maxCols = function () {
         return _CwCol;
     };
 
-    Window_OptionCategory.prototype.setItemWindow = function(itemWindow) {
+    Window_OptionCategory.prototype.setItemWindow = function (itemWindow) {
         this._itemWindow = itemWindow;
     };
-    
-    Window_OptionCategory.prototype.itemTextAlign = function() {
+
+    Window_OptionCategory.prototype.itemTextAlign = function () {
         return "center";
     };
 
-    Window_OptionCategory.prototype.makeCommandList = function() {
+    Window_OptionCategory.prototype.makeCommandList = function () {
         _categoryData.forEach(e => {
             this.addCommand(e.categoryName, e.categoryId);
         });
     };
 
-    Window_OptionCategory.prototype.update = function() {
+    Window_OptionCategory.prototype.update = function () {
         Window_Command.prototype.update.call(this);
         if (this._itemWindow) {
             this._itemWindow.setCategory(this.currentSymbol());
         }
     };
 
-    Window_OptionCategory.prototype.drawBackgroundRect = function(rect) {   
+    Window_OptionCategory.prototype.drawBackgroundRect = function (rect) {
     };
 
 
     function Sprite_Options() {
         this.initialize(...arguments);
     }
-    
+
     Sprite_Options.prototype = Object.create(Sprite.prototype);
     Sprite_Options.prototype.constructor = Sprite_Options;
 
-    Sprite_Options.prototype.initialize = function(bitmap, symbol) {
+    Sprite_Options.prototype.initialize = function (bitmap, symbol) {
         Sprite.prototype.initialize.call(this, bitmap);
         this._symbol = symbol;
     };
