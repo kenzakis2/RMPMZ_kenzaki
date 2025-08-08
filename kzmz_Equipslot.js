@@ -61,7 +61,8 @@
  * @default ["a.actor().meta.stand_picture,10,10"]
  * 
  *
- * @help kzmz_Equipslot.js
+ * @help アイテム名表示　item ? item.name : "",
+ *       スロット名表示　slotName,
  */
 
 (() => {
