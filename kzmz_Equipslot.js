@@ -101,7 +101,6 @@
 
     Window_EquipSlot.prototype.createBackSprite = function () {
         this._backSprite = new Sprite();
-        this._backSprite.bitmap = ImageManager.loadSystem(_wBackground);
         this.addChildToBack(this._backSprite);
     };
 
@@ -129,6 +128,9 @@
         if (this._actor) {
             this.drawStatusPicture(index);
             this.drawStatusText(index);
+
+            const a = this._actor;
+            this._backSprite.bitmap = ImageManager.loadSystem(eval(_wBackground));
         }
     };
 

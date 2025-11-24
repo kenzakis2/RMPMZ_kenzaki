@@ -4,7 +4,7 @@
 
 
 /*:ja
-* @plugindesc バリアステートの実装 - v1.0
+* @plugindesc バリアステートの実装 - v1.1
 * @author 剣崎宗二
 * 
 * @target MZ
@@ -53,6 +53,7 @@
 * ステートID5によるバリア：$gameActors.actor(3).findBarrierValueForState(5)
 *
 * v1.0 - MV版から改修
+* v1.1 - reduceの対objectに於ける動作に由来するfindTotalBarrierValue()の動作不良を修正
 */
 
 (() => {
@@ -125,8 +126,11 @@
         
         if (!base) return 0;
 
-        return base.reduce(
-            (n, current) => n.value + current, 0
+        return base
+        .map(e => e.value)
+        .reduce(
+            (n, current) => n + current,
+            0
         );
     };
 
