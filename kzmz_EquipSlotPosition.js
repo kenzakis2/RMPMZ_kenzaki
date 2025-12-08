@@ -8,6 +8,15 @@
  * @desc スロットデータ
  * @type struct<SlotCondition>[]
  * @default 
+ * 
+ *  @help kzmz_EquipSlotPosition.js
+ * 
+ * 装備スロット窓内で、各スロットの位置を自由に条件を設定して調整できるプラグインです。
+ * 条件式は以下を参考に、&&でつなげてください。
+ * ・アクターIDが3である場合 => actor.actorId() == 3
+ * ・装備タイプIDが2 => slotType == 2
+ * 
+ * 
  */
 /*~struct~SlotCondition:
  * 
