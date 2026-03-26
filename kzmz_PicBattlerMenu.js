@@ -309,7 +309,8 @@
 
     Window_ActorCommand.prototype.makeCommandSprites = function () {
         this._commandSprites = [];
-        this._list.forEach(function (element, i) {
+        var i = 0;
+        this._list.forEach(function (element) {
             if (!element.enabled && !_sealedDisplay) return;
             
             const symbolData = findwithSameSymbol(_symbolList, element);
@@ -328,6 +329,7 @@
             sprite.bitmap = ImageManager.loadSystem(symbolData ? symbolData.pic : "");
             this._commandSprites.push(sprite);
             this.addChild(sprite);
+            i++;
         }, this);
     };
 
