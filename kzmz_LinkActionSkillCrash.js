@@ -1,5 +1,22 @@
-//必ずLinkActionSkillの下に置くこと
-//<link_crash>タグにより相手の行動を打ち消す
+/*:ja
+ * @plugindesc 連鎖行動によるクラッシュ（強制割込み）- LinkActionSkill拡張
+ * @author 剣崎宗二
+ *
+ * @target MZ
+ *
+ * @help
+ * kzmz_LinkActionSkill.jsの拡張プラグインです。必ずその下に配置してください。
+ *
+ * ステートのメモ欄に<linkaction:...>と<linkcondition>に加えて
+ * <link_crash>
+ * タグを入れると、条件を満たした際に元の行動そのものを差し替える「クラッシュ」動作になります。
+ * （通常のlinkaction/counterは元の行動の後に追加で発動しますが、
+ * link_crashは元の行動自体をキャンセルし、代わりに連鎖スキルを発動させます）
+ *
+ * スキル・アイテムのメモ欄に
+ * <linkirreplacible>
+ * を入れると、そのスキル・アイテムはクラッシュによる差し替えの対象外になります。
+ */
 
 (function () {
 
